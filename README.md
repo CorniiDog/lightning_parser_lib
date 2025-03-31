@@ -8,9 +8,9 @@ The analyzer is capable of processing millions of LYLOUT datapoints in mere minu
 
 All of these methods allow extremely fast computation times, given the immense scale and size of the data itself.
 
-![most_pts](export/most_pts.gif)
+![most_pts](.img/most_pts.gif)
 
-![most_pts_stitched](export/most_pts_stitched.gif)
+![most_pts_stitched](.img/most_pts_stitched.gif)
 
 This library extracts LYLOUT data, store it into a lightning database, and processes millions of datapoints in the database to a reasonably fast and optimized speed. This project is meant to be a framework for applications to implement and parse data more appropriately.
 

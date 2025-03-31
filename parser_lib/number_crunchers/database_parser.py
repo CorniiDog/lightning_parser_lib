@@ -5,9 +5,9 @@ from pyproj import Transformer
 import pandas as pd
 import sys
 import traceback
-from parser_lib.number_crunchers.toolbox import tprint
-import logger
-import parser_lib.number_crunchers.toolbox as toolbox
+from .toolbox import tprint
+from . import logger 
+from . import toolbox
 
 def get_dat_files_paths(lightning_data_folder, data_extension):
     """

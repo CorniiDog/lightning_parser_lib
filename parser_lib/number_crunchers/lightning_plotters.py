@@ -16,7 +16,7 @@ import re
 from typing import Tuple
 from plotly.colors import sample_colorscale
 from plotly.subplots import make_subplots
-from parser_lib.number_crunchers.toolbox import tprint
+from .toolbox import tprint
 
 def plot_strikes_over_time(
     bucketed_strikes_indices_sorted: list[list[int]],

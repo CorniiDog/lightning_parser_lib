@@ -6,12 +6,13 @@ import hashlib
 import re
 import datetime
 from tqdm import tqdm
-import parser_lib.number_crunchers.lightning_stitcher as lightning_stitcher
 from typing import List, Tuple, Optional
 import multiprocessing
 from collections import Counter
-import parser_lib.number_crunchers.toolbox as toolbox
-from parser_lib.number_crunchers.toolbox import tprint
+from . import toolbox
+from .toolbox import tprint
+from . import lightning_stitcher
+
 
 
 # Global constants for cache handling.

@@ -16,10 +16,10 @@ import os
 import shutil
 import numpy as np
 import pandas as pd
-import parser_lib.number_crunchers.database_parser as database_parser
-import parser_lib.number_crunchers.lightning_bucketer as lightning_bucketer
-import parser_lib.number_crunchers.lightning_plotters as lightning_plotters
-from parser_lib.number_crunchers.toolbox import tprint
+from .number_crunchers import database_parser as database_parser
+from .number_crunchers import lightning_bucketer as lightning_bucketer
+from .number_crunchers import lightning_plotters as lightning_plotters
+from .number_crunchers.toolbox import tprint
 
 ####################################################################################
 # Configuration and User-specified Settings
