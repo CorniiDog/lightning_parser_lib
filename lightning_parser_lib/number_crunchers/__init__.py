@@ -1,5 +1,3 @@
-# parser_lib/number_crunchers/__init__.py
-
 from .database_parser import (
     get_dat_files_paths,
     DEFAULT_STATION_MASK_ORDER,

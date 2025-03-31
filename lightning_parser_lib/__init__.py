@@ -1,5 +1,3 @@
-# parser_lib/__init__.py
-
 from .config_and_parser import (
     cache_and_parse,
     get_events,
