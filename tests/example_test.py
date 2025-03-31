@@ -32,6 +32,7 @@ the file.
 """
 print("Starting up. Importing...")
 import lightning_parser_lib.config_and_parser as config_and_parser
+import lightning_parser_lib.number_crunchers
 from lightning_parser_lib.number_crunchers.toolbox import tprint
 import lightning_parser_lib.number_crunchers.toolbox as toolbox
 
@@ -44,10 +45,11 @@ import pandas as pd
 CPU_PCT = 0.9 
 config_and_parser.NUM_CORES = toolbox.cpu_pct_to_cores(CPU_PCT)
 
-config_and_parser.EXPORT_AS_CSV = True 
-config_and_parser.EXPORT_GENERAL_STATS = True
+config_and_parser.EXPORT_AS_CSV = False 
+config_and_parser.EXPORT_GENERAL_STATS = False
 config_and_parser.EXPORT_ALL_STRIKES = False
 config_and_parser.EXPORT_ALL_STRIKES_STITCHINGS = False
+config_and_parser.lightning_bucketer.USE_CACHE = True
 
 def main():
 
@@ -75,8 +77,8 @@ def main():
     ####################################################################################
     # Filter params for extracting data points from the SQLite database
     ####################################################################################
-    start_time = datetime.datetime(2020, 4, 14, 0, 0, tzinfo=datetime.timezone.utc).timestamp()  # Timestamp converts to unix (float)
-    end_time = datetime.datetime(2020, 4, 29, 15, 59, tzinfo=datetime.timezone.utc).timestamp()  # Timestamp converts to unix (float)
+    start_time = datetime.datetime(2020, 4, 29, 13, 0, tzinfo=datetime.timezone.utc).timestamp()  # Timestamp converts to unix (float)
+    end_time = datetime.datetime(2020, 4, 29, 14, 59, tzinfo=datetime.timezone.utc).timestamp()  # Timestamp converts to unix (float)
 
     # Build filter list for time_unix boundaries.
     # Look at "List of headers" above for additional
