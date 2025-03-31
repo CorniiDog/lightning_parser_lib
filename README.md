@@ -9,9 +9,9 @@ The analyzer is capable of processing millions of LYLOUT datapoints in mere minu
 
 All of these methods allow extremely fast computation times, given the immense scale and size of the data itself.
 
-![most_pts](.img/most_pts.gif)
+![most_pts](https://github.com/CorniiDog/lightning_research_application/blob/main/.img/most_pts.gif)
 
-![most_pts_stitched](.img/most_pts_stitched.gif)
+![most_pts_stitched](https://github.com/CorniiDog/lightning_research_application/blob/main/.img/most_pts_stitched.gif)
 
 This library extracts LYLOUT data, store it into a lightning database, and processes millions of datapoints in the database to a reasonably fast and optimized speed. This project is meant to be a framework for applications to implement and parse data more appropriately.
 
@@ -41,7 +41,7 @@ Three million datapoints should take roughly 4 minutes to process (excluding gen
 
 1. Drag and drop your LYLOUT text files into "lylout_files" directory.
 
-![lylout](.img/lylout_files.png)
+![lylout](https://github.com/CorniiDog/lightning_research_application/blob/main/.img/lylout_files.png)
 
 2. Modify the filters in "main.py":
 ```py
@@ -90,7 +90,7 @@ params = {
 > [!NOTE]
 > Some individuals may upload a compressed LYLOUT file without adding a suggestive extension filename. Make sure that all LYLOUT files are able to be readable as a text file. If they are not, they are likely compressed, with or without the extension name. It is suggested to try to add the ".gz" extension at the end manually by renaming the file, and attempt to unzip it. If that is not successful, try adding ".zip" and attempt to unzip.
 >
->![gz_example](.img/gz_example.png)
+>![gz_example](https://github.com/CorniiDog/lightning_research_application/blob/main/.img/gz_example.png)
 
 > [!NOTE]
 > When data is added to "lylout_files", everything gets hashed and recorded into "lylout_db.db". This ".db" file is a SQL database that stores all historical lightning strikes. If the database is becoming too large, you can simply delete the "lylout_db.db" file.
@@ -103,12 +103,15 @@ params = {
 
 - List all files in directory './' and sizes: `du -h --max-depth=1 ./ | sort -hr`
 
-- `./.venv/bin/python main.py`
-
-- `./.venv/bin/python main.py > output.log 2>&1 & disown`
-
-- `./.venv/bin/pip install -r requirements.txt`
-
-- `./.venv/bin/pip show setuptools`
-
-- `./.venv/bin/python3 -m build`
+> [!NOTE]
+> Because of Python 3.12 onwards, you may need to consider running via the following:
+>
+> - `./.venv/bin/python main.py`
+>
+> - `./.venv/bin/python main.py > output.log 2>&1 & disown`
+>
+> - `./.venv/bin/pip install -r requirements.txt`
+>
+> - `./.venv/bin/pip show setuptools`
+>
+> - `./.venv/bin/python3 -m build`
