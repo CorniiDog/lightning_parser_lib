@@ -6,6 +6,7 @@ lightning_parser_lib/config_and_parser.py
 lightning_parser_lib.egg-info/PKG-INFO
 lightning_parser_lib.egg-info/SOURCES.txt
 lightning_parser_lib.egg-info/dependency_links.txt
+lightning_parser_lib.egg-info/requires.txt
 lightning_parser_lib.egg-info/top_level.txt
 lightning_parser_lib/number_crunchers/__init__.py
 lightning_parser_lib/number_crunchers/database_parser.py
