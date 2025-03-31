@@ -44,8 +44,8 @@ import pandas as pd
 CPU_PCT = 0.9 
 config_and_parser.NUM_CORES = toolbox.cpu_pct_to_cores(CPU_PCT)
 
-config_and_parser.EXPORT_AS_CSV = False 
-config_and_parser.EXPORT_GENERAL_STATS = False
+config_and_parser.EXPORT_AS_CSV = True 
+config_and_parser.EXPORT_GENERAL_STATS = True
 config_and_parser.EXPORT_ALL_STRIKES = False
 config_and_parser.EXPORT_ALL_STRIKES_STITCHINGS = False
 

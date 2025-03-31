@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: lightning_parser_lib
-Version: 0.1.3
+Version: 0.1.4
 Summary: The Connor's Lightning Parser Lib (LPL) is an extremely powerful analysis utility with a simplistic front-end in mind.
 Author-email: Connor White <connor.sw.personal@gmail.com>
 License-Expression: MIT
@@ -167,8 +167,8 @@ import pandas as pd
 CPU_PCT = 0.9 
 config_and_parser.NUM_CORES = toolbox.cpu_pct_to_cores(CPU_PCT)
 
-config_and_parser.EXPORT_AS_CSV = False 
-config_and_parser.EXPORT_GENERAL_STATS = False
+config_and_parser.EXPORT_AS_CSV = True 
+config_and_parser.EXPORT_GENERAL_STATS = True
 config_and_parser.EXPORT_ALL_STRIKES = False
 config_and_parser.EXPORT_ALL_STRIKES_STITCHINGS = False
 
