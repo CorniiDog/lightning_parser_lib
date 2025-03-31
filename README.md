@@ -1,6 +1,7 @@
-# Connor's Mapping Array Analyzer (CMAA)
+# Connor's Lightning Parser Lib (LPL)
 
-The Connor's Mapping Array Analyzer (CMAA) is an extremely powerful analysis utility with a simplistic front-end in mind.
+The Connor's Lightning Parser Lib (LPL) is an extremely powerful analysis utility with a simplistic front-end in mind.
+
 The analyzer is capable of processing millions of LYLOUT datapoints in mere minutes by using a SQL database back-end for initial filtering, and then uses optimized work-arounds for computationally expensive methods that omit square-root and trig functions for distances between points. Not to mention it's back-end parses most data with indexes (list[int], list[list[int]], etc.) instead of the entire data itself. Additionally, it uses multi-processing when necessary to accelerate processes.
 
 >[!NOTE]
@@ -107,3 +108,5 @@ params = {
 - `./.venv/bin/python main.py > output.log 2>&1 & disown`
 
 - `./.venv/bin/pip install -r requirements.txt`
+
+- `./.venv/bin/pip show setuptools`

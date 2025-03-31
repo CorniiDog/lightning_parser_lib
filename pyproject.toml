@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lightning_parser_lib_CorniiDog"
+version = "0.0.1"
+authors = [
+  { name="Connor White", email="connor.sw.personal@gmail.com" },
+]
+description = "The Connor's Lightning Parser Lib (LPL) is an extremely powerful analysis utility with a simplistic front-end in mind."
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
+
+[project.urls]
+Homepage = "https://github.com/CorniiDog/lightning_research_application"
+Issues = "https://github.com/CorniiDog/lightning_research_application/issues"

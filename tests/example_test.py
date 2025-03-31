@@ -32,9 +32,9 @@ the file.
 """
 
 print("Starting up. Importing...")
-import parser_lib.config_and_parser as config_and_parser
-from parser_lib.number_crunchers.toolbox import tprint
-import parser_lib.number_crunchers.toolbox as toolbox
+import lightning_parser_lib_CorniiDog.config_and_parser as config_and_parser
+from lightning_parser_lib_CorniiDog.number_crunchers.toolbox import tprint
+import lightning_parser_lib_CorniiDog.number_crunchers.toolbox as toolbox
 
 import time
 import datetime
