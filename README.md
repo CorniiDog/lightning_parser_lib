@@ -117,7 +117,6 @@ the data. Examples in the code and comments below show how to do so.
 Look at README.md for further details on how to install prerequisited and also run
 the file.
 """
-
 print("Starting up. Importing...")
 import lightning_parser_lib.config_and_parser as config_and_parser
 from lightning_parser_lib.number_crunchers.toolbox import tprint
@@ -131,6 +130,11 @@ import pandas as pd
 # Set to 0.0 to use only one core
 CPU_PCT = 0.9 
 config_and_parser.NUM_CORES = toolbox.cpu_pct_to_cores(CPU_PCT)
+
+config_and_parser.EXPORT_AS_CSV = False 
+config_and_parser.EXPORT_GENERAL_STATS = False
+config_and_parser.EXPORT_ALL_STRIKES = False
+config_and_parser.EXPORT_ALL_STRIKES_STITCHINGS = False
 
 def main():
 
