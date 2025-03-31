@@ -75,8 +75,8 @@ def main():
     ####################################################################################
     # Filter params for extracting data points from the SQLite database
     ####################################################################################
-    start_time = datetime.datetime(2020, 4, 29, 0, 0, tzinfo=datetime.timezone.utc).timestamp()  # Timestamp converts to unix (float)
-    end_time = datetime.datetime(2020, 4, 29, 23, 59, tzinfo=datetime.timezone.utc).timestamp()  # Timestamp converts to unix (float)
+    start_time = datetime.datetime(2020, 4, 14, 0, 0, tzinfo=datetime.timezone.utc).timestamp()  # Timestamp converts to unix (float)
+    end_time = datetime.datetime(2020, 4, 29, 15, 59, tzinfo=datetime.timezone.utc).timestamp()  # Timestamp converts to unix (float)
 
     # Build filter list for time_unix boundaries.
     # Look at "List of headers" above for additional
