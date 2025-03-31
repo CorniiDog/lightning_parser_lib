@@ -274,3 +274,8 @@ if __name__ == '__main__':
 > - `./.venv/bin/pip show setuptools`
 >
 > - `./.venv/bin/python3 -m build`
+
+## Building from source
+
+- `.venv/bin/python -m build`
+- `.venv/bin/python3 -m twine upload --repository lightning_parser_lib dist/*`
