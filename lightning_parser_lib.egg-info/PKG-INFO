@@ -1,3 +1,18 @@
+Metadata-Version: 2.4
+Name: lightning_parser_lib
+Version: 0.0.1
+Summary: The Connor's Lightning Parser Lib (LPL) is an extremely powerful analysis utility with a simplistic front-end in mind.
+Author-email: Connor White <connor.sw.personal@gmail.com>
+License-Expression: MIT
+Project-URL: Homepage, https://github.com/CorniiDog/lightning_research_application
+Project-URL: Issues, https://github.com/CorniiDog/lightning_research_application/issues
+Classifier: Programming Language :: Python :: 3
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Dynamic: license-file
+
 # Connor's Lightning Parser Lib (LPL)
 
 The Connor's Lightning Parser Lib (LPL) is an extremely powerful analysis utility with a simplistic front-end in mind.

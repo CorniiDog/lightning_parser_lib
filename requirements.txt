@@ -22,3 +22,5 @@ holoviews
 bokeh
 selenium
 webdriver-manager
+build
+twine
