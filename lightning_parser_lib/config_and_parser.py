@@ -40,16 +40,9 @@ DB_PATH = os.path.join(CACHE_DIR, "lylout_db.db")  # SQLite database file.
 CACHE_PATH = os.path.join(CACHE_DIR, "os_cache.pkl")  # Pickle file for caching.
 
 # Export options.
-EXPORT_AS_CSV = False       # Export CSV files if True.
 CSV_DIR = "strikes_csv_files"  # Directory to hold CSV files.
-
-EXPORT_GENERAL_STATS = True
 EXPORT_DIR = "export"       # Directory for general exported charts/plots.
-
-EXPORT_ALL_STRIKES = False
 STRIKE_DIR = "strikes"      # Directory for all strikes plots.
-
-EXPORT_ALL_STRIKES_STITCHINGS = False
 STRIKE_STITCHINGS_DIR = "strike_stitchings"  # Directory for stitched strikes plots.
 
 ####################################################################################

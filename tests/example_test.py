@@ -44,10 +44,11 @@ import pandas as pd
 CPU_PCT = 0.9 
 config_and_parser.NUM_CORES = toolbox.cpu_pct_to_cores(CPU_PCT)
 
-config_and_parser.EXPORT_AS_CSV = False 
-config_and_parser.EXPORT_GENERAL_STATS = False
-config_and_parser.EXPORT_ALL_STRIKES = False
-config_and_parser.EXPORT_ALL_STRIKES_STITCHINGS = False
+EXPORT_AS_CSV = False 
+EXPORT_GENERAL_STATS = False
+EXPORT_ALL_STRIKES = False
+EXPORT_ALL_STRIKES_STITCHINGS = False
+
 config_and_parser.lightning_bucketer.USE_CACHE = True
 
 def main():
@@ -141,16 +142,16 @@ def main():
     MAX_N_PTS = 1000
     bucketed_strikes_indices, bucketed_lightning_correlations = config_and_parser.limit_to_n_points(bucketed_strikes_indices, bucketed_lightning_correlations, MAX_N_PTS)
 
-    if config_and_parser.EXPORT_AS_CSV:
+    if EXPORT_AS_CSV:
         config_and_parser.export_as_csv(bucketed_strikes_indices, events) 
 
-    if config_and_parser.EXPORT_GENERAL_STATS:
+    if EXPORT_GENERAL_STATS:
         config_and_parser.export_general_stats(bucketed_strikes_indices, bucketed_lightning_correlations, events)
 
-    if config_and_parser.EXPORT_ALL_STRIKES:
+    if EXPORT_ALL_STRIKES:
         config_and_parser.export_all_strikes(bucketed_strikes_indices, events)
 
-    if config_and_parser.EXPORT_ALL_STRIKES_STITCHINGS:
+    if EXPORT_ALL_STRIKES_STITCHINGS:
         config_and_parser.export_strike_stitchings(bucketed_lightning_correlations, events)
 
     tprint("Finished generating plots")
