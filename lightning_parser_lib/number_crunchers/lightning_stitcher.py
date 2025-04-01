@@ -213,7 +213,7 @@ def stitch_lightning_strikes(bucketed_strike_indices: list[list[int]], events: p
             z1 = all_z[start_idx]
             
             result_found = False
-            for i, temp_corr in enumerate(reversed(temp_bucketed_correlations)):
+            for i, temp_corr in enumerate(temp_bucketed_correlations):
                 temp_start = all_times[temp_corr[0][0]]
                 temp_end = all_times[temp_corr[-1][-1]] + ext_buffer
 

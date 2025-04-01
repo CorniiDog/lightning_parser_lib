@@ -82,7 +82,7 @@ def _group_process(args_list):
             max_speed_squared = max_speed ** 2
 
             found = False
-            for sg in reversed(sub_groups):
+            for sg in sub_groups:
                 # Convert list to array for vectorized operations.
                 sg_unix = np.array(sg["unix"])
                 dt_all = np.abs(event_unix - sg_unix)
