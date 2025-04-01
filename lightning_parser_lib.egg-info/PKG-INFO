@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: lightning_parser_lib
-Version: 0.1.25
+Version: 0.1.26
 Summary: Connor's Lightning Parser Lib (LPL) is an extremely powerful analysis utility with a simplistic front-end in mind.
 Author-email: Connor White <connor.sw.personal@gmail.com>
 License-Expression: MIT
@@ -35,6 +35,9 @@ All of these methods allow extremely fast computation times, given the immense s
 ![most_pts](https://github.com/CorniiDog/lightning_research_application/raw/main/.img/most_pts.gif)
 
 ![most_pts_stitched](https://github.com/CorniiDog/lightning_research_application/raw/main/.img/most_pts_stitched.gif)
+
+>[!NOTE]
+> The gray, un-stitched dots in the figure are points that do not meet the criteria to be a part of the lightning strike, as determined by stitching parameters. By comparing stitched vs. non-stitched points in the visualization, you can verify the validity of the strike stitching algorithm
 
 This library extracts LYLOUT data, store it into a lightning database, and processes millions of datapoints in the database to a reasonably fast and optimized speed. This project is meant to be a framework for applications to implement and parse data more appropriately.
 
