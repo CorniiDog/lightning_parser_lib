@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: lightning_parser_lib
-Version: 0.1.12
+Version: 0.1.13
 Summary: The Connor's Lightning Parser Lib (LPL) is an extremely powerful analysis utility with a simplistic front-end in mind.
 Author-email: Connor White <connor.sw.personal@gmail.com>
 License-Expression: MIT
@@ -177,8 +177,8 @@ lightning_configuration = config_and_parser.LightningConfig(
     strike_stitchings_dir = "strike_stitchings"
 )
 
-EXPORT_AS_CSV = False 
-EXPORT_GENERAL_STATS = False
+EXPORT_AS_CSV = True 
+EXPORT_GENERAL_STATS = True
 EXPORT_ALL_STRIKES = False
 EXPORT_ALL_STRIKES_STITCHINGS = False
 

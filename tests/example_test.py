@@ -54,8 +54,8 @@ lightning_configuration = config_and_parser.LightningConfig(
     strike_stitchings_dir = "strike_stitchings"
 )
 
-EXPORT_AS_CSV = False 
-EXPORT_GENERAL_STATS = False
+EXPORT_AS_CSV = True 
+EXPORT_GENERAL_STATS = True
 EXPORT_ALL_STRIKES = False
 EXPORT_ALL_STRIKES_STITCHINGS = False
 
