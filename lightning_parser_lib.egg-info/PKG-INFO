@@ -1,11 +1,11 @@
 Metadata-Version: 2.4
 Name: lightning_parser_lib
-Version: 0.1.21
-Summary: The Connor's Lightning Research Application (LRA) is an extremely powerful analysis utility with a simplistic front-end in mind.
+Version: 0.1.22
+Summary: Connor's Lightning Parser Lib (LPL) is an extremely powerful analysis utility with a simplistic front-end in mind.
 Author-email: Connor White <connor.sw.personal@gmail.com>
 License-Expression: MIT
-Project-URL: Homepage, https://github.com/CorniiDog/lightning_research_application
-Project-URL: Issues, https://github.com/CorniiDog/lightning_research_application/issues
+Project-URL: Homepage, https://github.com/CorniiDog/lightning_parser_lib
+Project-URL: Issues, https://github.com/CorniiDog/lightning_parser_lib/issues
 Classifier: Programming Language :: Python :: 3
 Classifier: Operating System :: OS Independent
 Requires-Python: >=3.9
@@ -21,9 +21,9 @@ Requires-Dist: numpy
 Requires-Dist: imageio
 Dynamic: license-file
 
-# Connor's Lightning Research Application (LRA)
+# Connor's Lightning Parser Lib (LPL)
 
-The Connor's Lightning Research Application (LRA) is an extremely powerful analysis utility with a simplistic front-end in mind.
+Connor's Lightning Parser Lib (LPL) is an extremely powerful analysis utility with a simplistic front-end in mind.
 
 The analyzer is capable of processing millions of LYLOUT datapoints in mere minutes by using a SQL database back-end for initial filtering, and then uses optimized work-arounds for computationally expensive methods that omit square-root and trig functions for distances between points. Not to mention it's back-end parses most data with indexes (list[int], list[list[int]], etc.) instead of the entire data itself. Additionally, it uses multi-processing when necessary to accelerate processes.
 
@@ -32,9 +32,9 @@ The analyzer is capable of processing millions of LYLOUT datapoints in mere minu
 
 All of these methods allow extremely fast computation times, given the immense scale and size of the data itself.
 
-![most_pts](https://github.com/CorniiDog/lightning_research_application/blob/main/.img/most_pts.gif)
+![most_pts](https://github.com/CorniiDog/lightning_research_application/raw/main/.img/most_pts.gif)
 
-![most_pts_stitched](https://github.com/CorniiDog/lightning_research_application/blob/main/.img/most_pts_stitched.gif)
+![most_pts_stitched](https://github.com/CorniiDog/lightning_research_application/raw/main/.img/most_pts_stitched.gif)
 
 This library extracts LYLOUT data, store it into a lightning database, and processes millions of datapoints in the database to a reasonably fast and optimized speed. This project is meant to be a framework for applications to implement and parse data more appropriately.
 
@@ -57,7 +57,7 @@ To install: `pip install lightning-parser-lib`
 
 1. Drag and drop your LYLOUT text files into "lylout_files" directory.
 
-![lylout](https://github.com/CorniiDog/lightning_research_application/blob/main/.img/lylout_files.png)
+![lylout](https://github.com/CorniiDog/lightning_research_application/raw/main/.img/lylout_files.png)
 
 2. Modify the filters in "main.py":
 ```py
@@ -281,7 +281,7 @@ if __name__ == '__main__':
 > [!NOTE]
 > Some individuals may upload a compressed LYLOUT file without adding a suggestive extension filename. Make sure that all LYLOUT files are able to be readable as a text file. If they are not, they are likely compressed, with or without the extension name. It is suggested to try to add the ".gz" extension at the end manually by renaming the file, and attempt to unzip it. If that is not successful, try adding ".zip" and attempt to unzip.
 >
->![gz_example](https://github.com/CorniiDog/lightning_research_application/blob/main/.img/gz_example.png)
+>![gz_example](https://github.com/CorniiDog/lightning_research_application/raw/main/.img/gz_example.png)
 
 > [!NOTE]
 > When data is added to "lylout_files", everything gets hashed and recorded into "lylout_db.db". This ".db" file is a SQL database that stores all historical lightning strikes. If the database is becoming too large, you can simply delete the "lylout_db.db" file.
