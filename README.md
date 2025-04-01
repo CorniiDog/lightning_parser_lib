@@ -56,14 +56,6 @@ lightning strike is simply a list of indices for the "events" DataFrame
 the data. Examples in the code and comments below show how to do so.
 """
 ####################################################################################
-#
-# About: How to run
-#
-####################################################################################
-"""
-Look at README.md for further details on how to install prerequisited and also run
-the file.
-"""
 print("Starting up. Importing...")
 import lightning_parser_lib.config_and_parser as config_and_parser
 from lightning_parser_lib.number_crunchers.toolbox import tprint
@@ -90,8 +82,8 @@ lightning_configuration = config_and_parser.LightningConfig(
 
 EXPORT_AS_CSV = True 
 EXPORT_GENERAL_STATS = True
-EXPORT_ALL_STRIKES = False
-EXPORT_ALL_STRIKES_STITCHINGS = False
+EXPORT_ALL_STRIKES = True
+EXPORT_ALL_STRIKES_STITCHINGS = True
 
 config_and_parser.lightning_bucketer.USE_CACHE = True
 
