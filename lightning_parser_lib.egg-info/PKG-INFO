@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: lightning_parser_lib
-Version: 0.1.22
+Version: 0.1.23
 Summary: Connor's Lightning Parser Lib (LPL) is an extremely powerful analysis utility with a simplistic front-end in mind.
 Author-email: Connor White <connor.sw.personal@gmail.com>
 License-Expression: MIT
@@ -51,60 +51,9 @@ Three million datapoints should take roughly 4 minutes to process (excluding gen
 
 ### Getting Started
 
-To install: `pip install lightning-parser-lib`
+1. Install project in your environment: `pip install lightning-parser-lib`
 
-### To Run the project
-
-1. Drag and drop your LYLOUT text files into "lylout_files" directory.
-
-![lylout](https://github.com/CorniiDog/lightning_research_application/raw/main/.img/lylout_files.png)
-
-2. Modify the filters in "main.py":
-```py
-start_time = datetime.datetime(2020, 4, 29, 0, 0, tzinfo=datetime.timezone.utc).timestamp()  # Timestamp converts to unix (float)
-end_time = datetime.datetime(2020, 4, 29, 23, 59, tzinfo=datetime.timezone.utc).timestamp()  # Timestamp converts to unix (float)
-
-
-# Build filter list for time_unix boundaries.
-# Look at "List of headers" above for additional
-# Filterings
-filters = [
-        ("time_unix", ">=", start_time),  # In unix
-        ("time_unix", "<=", end_time),  # In unix
-        ("reduced_chi2", "<", 5.0,),  # The chi^2 (reliability index) value to accept the data
-        ("num_stations", ">=", 5),  # Number of stations that have visibly seen the strike
-        ("alt", "<=", 24000),  # alt is in meters. Therefore 20 km = 20000m
-        ("alt", ">", 0),  # Above ground
-        ("power_db", ">", -4),  # In dBW
-        ("power_db", "<", 50),  # In dBW
-    ]
-```
-
-3. Modify parameters
-```py
-# Additional parameters that determines "What points make up a single lightning strike"
-# They are explicitly defined
-params = {
-        # Creating an initial lightning strike
-        "max_lightning_dist": 30000,  # Max distance between two points to determine it being involved in the same strike
-        "max_lightning_speed": 1.4e8,  # Max speed between two points in m/s (essentially dx/dt)
-        "min_lightning_speed": 0,  # Min speed between two points in m/s (essentially dx/dt)
-        "min_lightning_points": 100,  # The minimum number of points to pass the system as a "lightning strike"
-        "max_lightning_time_threshold": 0.3,  # Max number of seconds between points 
-        "max_lightning_duration": 30, # Max seconds that define an entire lightning strike. This is essentially a "time window" for all of the points to fill the region that determines a "lightning strike"
-
-        # Combining intercepting lightning strike data filtering
-        "combine_strikes_with_intercepting_times": True, # Set to true to ensure that strikes with intercepting times get combined. 
-        "intercepting_times_extension_buffer": 0.6, # Number of seconds of additional overlap to allow an additional strike to be involved
-        "intercepting_times_extension_max_distance": 100000, # The max distance between the start point of one lightning strike and at least one from the entirety of another lightning strike's points
-    }
-
-```
-
-4. Run with `python run main.py` and observe the images in their respective directories
-
-## Sample main.py
-
+2. Create a `main.py` and paste the boilerplate sample code:
 ```py
 ####################################################################################
 #
@@ -278,6 +227,12 @@ if __name__ == '__main__':
     main()
 ```
 
+3. Run in terminal: `python main.py`
+
+4. Drag and drop your LYLOUT text files into `lylout_files` directory.
+
+![lylout](https://github.com/CorniiDog/lightning_research_application/raw/main/.img/lylout_files.png)
+
 > [!NOTE]
 > Some individuals may upload a compressed LYLOUT file without adding a suggestive extension filename. Make sure that all LYLOUT files are able to be readable as a text file. If they are not, they are likely compressed, with or without the extension name. It is suggested to try to add the ".gz" extension at the end manually by renaming the file, and attempt to unzip it. If that is not successful, try adding ".zip" and attempt to unzip.
 >
@@ -286,7 +241,49 @@ if __name__ == '__main__':
 > [!NOTE]
 > When data is added to "lylout_files", everything gets hashed and recorded into "lylout_db.db". This ".db" file is a SQL database that stores all historical lightning strikes. If the database is becoming too large, you can simply delete the "lylout_db.db" file.
 
+5. Modify the filters in "main.py":
+```py
+start_time = datetime.datetime(2020, 4, 29, 0, 0, tzinfo=datetime.timezone.utc).timestamp()  # Timestamp converts to unix (float)
+end_time = datetime.datetime(2020, 4, 29, 23, 59, tzinfo=datetime.timezone.utc).timestamp()  # Timestamp converts to unix (float)
 
+
+# Build filter list for time_unix boundaries.
+# Look at "List of headers" above for additional
+# Filterings
+filters = [
+        ("time_unix", ">=", start_time),  # In unix
+        ("time_unix", "<=", end_time),  # In unix
+        ("reduced_chi2", "<", 5.0,),  # The chi^2 (reliability index) value to accept the data
+        ("num_stations", ">=", 5),  # Number of stations that have visibly seen the strike
+        ("alt", "<=", 24000),  # alt is in meters. Therefore 20 km = 20000m
+        ("alt", ">", 0),  # Above ground
+        ("power_db", ">", -4),  # In dBW
+        ("power_db", "<", 50),  # In dBW
+    ]
+```
+
+6. Modify parameters
+```py
+# Additional parameters that determines "What points make up a single lightning strike"
+# They are explicitly defined
+params = {
+        # Creating an initial lightning strike
+        "max_lightning_dist": 30000,  # Max distance between two points to determine it being involved in the same strike
+        "max_lightning_speed": 1.4e8,  # Max speed between two points in m/s (essentially dx/dt)
+        "min_lightning_speed": 0,  # Min speed between two points in m/s (essentially dx/dt)
+        "min_lightning_points": 100,  # The minimum number of points to pass the system as a "lightning strike"
+        "max_lightning_time_threshold": 0.3,  # Max number of seconds between points 
+        "max_lightning_duration": 30, # Max seconds that define an entire lightning strike. This is essentially a "time window" for all of the points to fill the region that determines a "lightning strike"
+
+        # Combining intercepting lightning strike data filtering
+        "combine_strikes_with_intercepting_times": True, # Set to true to ensure that strikes with intercepting times get combined. 
+        "intercepting_times_extension_buffer": 0.6, # Number of seconds of additional overlap to allow an additional strike to be involved
+        "intercepting_times_extension_max_distance": 100000, # The max distance between the start point of one lightning strike and at least one from the entirety of another lightning strike's points
+    }
+
+```
+
+7. Run with `python main.py` again and observe the images in their respective directories
 
 ## Useful Functions
 
