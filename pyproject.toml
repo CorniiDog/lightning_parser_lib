@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lightning_parser_lib"
-version = "0.1.14"
+version = "0.1.15"
 authors = [
   { name="Connor White", email="connor.sw.personal@gmail.com" },
 ]
@@ -25,21 +25,8 @@ dependencies = [
   "kaleido",
   "scipy",
   "tqdm",
-  "xarray",
   "numpy",
-  "scikit-learn",
-  "matplotlib",
-  "cartopy",
-  "metpy",
-  "jupyterlab",
-  "ipywidgets",
-  "ipympl",
   "imageio",
-  "datashader",
-  "holoviews",
-  "bokeh",
-  "selenium",
-  "webdriver-manager",
 ]
 
 [project.urls]
