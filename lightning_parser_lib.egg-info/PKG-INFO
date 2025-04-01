@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: lightning_parser_lib
-Version: 0.1.13
+Version: 0.1.14
 Summary: The Connor's Lightning Parser Lib (LPL) is an extremely powerful analysis utility with a simplistic front-end in mind.
 Author-email: Connor White <connor.sw.personal@gmail.com>
 License-Expression: MIT
@@ -64,9 +64,7 @@ Three million datapoints should take roughly 4 minutes to process (excluding gen
 
 ### Getting Started
 
-Install via: `pip install lightning-parser-lib`
-
-Then do first-time setup via `python main.py`
+To install: `pip install lightning-parser-lib`
 
 ### To Run the project
 
