@@ -28,9 +28,7 @@ Three million datapoints should take roughly 4 minutes to process (excluding gen
 
 ### Getting Started
 
-Install via: `pip install lightning-parser-lib`
-
-Then do first-time setup via `python main.py`
+To install: `pip install lightning-parser-lib`
 
 ### To Run the project
 
