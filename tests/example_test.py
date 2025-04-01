@@ -32,7 +32,6 @@ the file.
 """
 print("Starting up. Importing...")
 import lightning_parser_lib.config_and_parser as config_and_parser
-import lightning_parser_lib.number_crunchers
 from lightning_parser_lib.number_crunchers.toolbox import tprint
 import lightning_parser_lib.number_crunchers.toolbox as toolbox
 
