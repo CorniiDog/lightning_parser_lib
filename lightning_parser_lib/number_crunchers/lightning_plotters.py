@@ -17,6 +17,7 @@ from typing import Tuple
 from plotly.colors import sample_colorscale
 from plotly.subplots import make_subplots
 from .toolbox import tprint
+from . import toolbox
 
 def plot_strikes_over_time(
     bucketed_strikes_indices_sorted: list[list[int]],
@@ -99,7 +100,8 @@ def plot_avg_power_map(
     _export_fig=True,
     _range=None,
     _bar_range=None,
-    _use_start_time=True
+    _use_start_time=True,
+    _explicit_time_lerp: float=None
 ):
     """
     Generate a heatmap of average power (in dBW) over latitude/longitude for a specified lightning strike.
@@ -128,11 +130,17 @@ def plot_avg_power_map(
 
     strike_events = events.iloc[strike_indices]
 
+    start_unix = strike_events.iloc[0]["time_unix"]
+    end_unix = strike_events.iloc[-1]["time_unix"]
+
     # Get the strike's start time from the first event.
-    if _use_start_time:
-        title_unix = strike_events.iloc[0]["time_unix"]
+    if not _explicit_time_lerp:
+        if _use_start_time:
+            title_unix = start_unix
+        else:
+            title_unix = end_unix
     else:
-        title_unix = strike_events.iloc[-1]["time_unix"]
+        title_unix = toolbox.lerp(start_unix, end_unix, _explicit_time_lerp)
     title_dt = datetime.datetime.fromtimestamp(title_unix, tz=datetime.timezone.utc)
     frac = int(title_dt.microsecond / 10000)  # Convert microseconds to hundredths (0-99)
     title_str = title_dt.strftime(f"%Y-%m-%d %H:%M:%S.{frac:02d} UTC")
@@ -300,7 +308,8 @@ def generate_strike_gif(
             _export_fig=False,
             _range=_range,
             _bar_range=[0, max_stat],
-            _use_start_time=False
+            _use_start_time=False,
+            _explicit_time_lerp=(frame/num_frames)
         )
         
         # Convert the Plotly figure to an image.
@@ -401,7 +410,9 @@ def plot_lightning_stitch(
     _export_fig: bool = True,
     _dimensions: list[list[str, str], list[str, str]] = (["lon", "Longitude"], ["lat", "Latitude"]),
     _range=None,
-    _use_start_time = True
+    _use_start_time = True,
+    _explicit_time_lerp: float = None
+    
 ) -> go.Figure:
     """
     Plot stitched lightning correlations on a 2D scatter plot using latitude and longitude.
@@ -434,10 +445,16 @@ def plot_lightning_stitch(
     # Filter the events dataframe for all points between the two timestamps.
     points_between = events[(events["time_unix"] >= start_time_unix) & (events["time_unix"] <= end_time_unix)]
 
-    if _use_start_time:
-        marker_time_dt = datetime.datetime.fromtimestamp(start_time_unix, tz=datetime.timezone.utc)
+    # Get the strike's start time from the first event.
+    if not _explicit_time_lerp:
+        if _use_start_time:
+            marker_time_unix = start_time_unix
+        else:
+            marker_time_unix = end_time_unix
     else:
-        marker_time_dt = datetime.datetime.fromtimestamp(end_time_unix, tz=datetime.timezone.utc)
+        marker_time_unix = toolbox.lerp(start_time_unix, end_time_unix, _explicit_time_lerp)
+    
+    marker_time_dt = datetime.datetime.fromtimestamp(marker_time_unix, tz=datetime.timezone.utc)
 
     frac = int(marker_time_dt.microsecond / 10000)  # Convert microseconds to hundredths (0-99)
     marker_time_str = marker_time_dt.strftime(f"%Y-%m-%d %H:%M:%S.{frac:02d} UTC")
@@ -633,7 +650,7 @@ def plot_lightning_stitch_gif(
     
     frames = []
     total_corr = len(sorted_correlations)
-    
+
     # Generate frames by progressively adding more correlations.
     for frame in range(1, num_frames + 1):
         # Determine the cutoff index for the current frame (ensure at least one correlation is shown).
@@ -648,7 +665,8 @@ def plot_lightning_stitch_gif(
             output_filename="temp.png",  # Dummy filename; image export is disabled.
             _export_fig=False,
             _range=full_range,
-            _use_start_time=False
+            _use_start_time=False,
+            _explicit_time_lerp=(frame/num_frames)
         )
         
         # Convert the Plotly figure to an image.

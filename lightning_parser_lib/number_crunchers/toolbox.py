@@ -255,3 +255,28 @@ def cpu_pct_to_cores(pct: float) -> int:
         raise("Percentage must be a value between 0.0 and 1.0 for determining core count")
 
     return int(max(pct * os.cpu_count(), 1))
+
+
+def lerp(start: float, end: float, t: float) -> float:
+    """
+    Computes the linear interpolation between two float values.
+
+    This function returns a value that is a weighted average of the `start` and `end` parameters,
+    based on the interpolation factor `t`. When `t` is 0.0, the result equals `start`; when `t` is 1.0,
+    the result equals `end`. For values of `t` between 0.0 and 1.0, the function returns a linearly
+    interpolated value between `start` and `end`.
+
+    Parameters:
+      start (float): The starting value.
+      end (float): The ending value.
+      t (float): The interpolation factor, typically in the range [0.0, 1.0]. Values outside this range
+                 will extrapolate beyond the provided `start` and `end`.
+
+    Returns:
+      float: The interpolated value computed as (1 - t) * start + t * end.
+
+    Example:
+      >>> lerp(10.0, 20.0, 0.5)
+      15.0
+    """
+    return (1 - t) * start + t * end
