@@ -1,4 +1,5 @@
 from .config_and_parser import (
+    LightningConfig,
     cache_and_parse,
     get_events,
     bucket_dataframe_lightnings,
@@ -10,6 +11,7 @@ from .config_and_parser import (
 )
 
 __all__ = [
+    "LightningConfig",
     "cache_and_parse",
     "get_events",
     "bucket_dataframe_lightnings",

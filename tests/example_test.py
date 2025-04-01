@@ -42,7 +42,17 @@ import pandas as pd
 # what percent of the total number of cores to be utilized. 
 # Set to 0.0 to use only one core
 CPU_PCT = 0.9 
-config_and_parser.NUM_CORES = toolbox.cpu_pct_to_cores(CPU_PCT)
+
+lightning_configuration = config_and_parser.LightningConfig(
+    num_cores = toolbox.cpu_pct_to_cores(CPU_PCT),
+    lightning_data_folder = "lylout_files",
+    data_extension = ".dat",
+    cache_dir ="cache_dir",
+    csv_dir = "strikes_csv_files",
+    export_dir = "export",
+    strike_dir = "strikes",
+    strike_stitchings_dir = "strike_stitchings"
+)
 
 EXPORT_AS_CSV = False 
 EXPORT_GENERAL_STATS = False
@@ -54,7 +64,7 @@ config_and_parser.lightning_bucketer.USE_CACHE = True
 def main():
 
     # This parses data from "lylout_files" directory and stashes it in a database
-    config_and_parser.cache_and_parse()
+    config_and_parser.cache_and_parse(config=lightning_configuration)
 
     # Column/Header descriptions:
     # 'time_unix'    -> float   Seconds (Unix timestamp, UTC)
@@ -93,7 +103,7 @@ def main():
         ("power_db", ">", -4),  # In dBW
         ("power_db", "<", 50),  # In dBW
     ]
-    events: pd.DataFrame = config_and_parser.get_events(filters)
+    events: pd.DataFrame = config_and_parser.get_events(filters, config=lightning_configuration)
     tprint("Events:", events)
 
     ####################################################################################
@@ -116,7 +126,7 @@ def main():
         "intercepting_times_extension_buffer": 0.6, # Number of seconds of additional overlap to allow an additional strike to be involved
         "intercepting_times_extension_max_distance": 100000, # The max distance between the start point of one lightning strike and at least one from the entirety of another lightning strike's points
     }
-    bucketed_strikes_indices, bucketed_lightning_correlations = config_and_parser.bucket_dataframe_lightnings(events, **params)
+    bucketed_strikes_indices, bucketed_lightning_correlations = config_and_parser.bucket_dataframe_lightnings(events, config=lightning_configuration, **params)
 
     # Example: To get a Pandas DataFrame of the first strike in the list, you do:
     # ```
@@ -143,16 +153,16 @@ def main():
     bucketed_strikes_indices, bucketed_lightning_correlations = config_and_parser.limit_to_n_points(bucketed_strikes_indices, bucketed_lightning_correlations, MAX_N_PTS)
 
     if EXPORT_AS_CSV:
-        config_and_parser.export_as_csv(bucketed_strikes_indices, events) 
+        config_and_parser.export_as_csv(bucketed_strikes_indices, events, config=lightning_configuration) 
 
     if EXPORT_GENERAL_STATS:
-        config_and_parser.export_general_stats(bucketed_strikes_indices, bucketed_lightning_correlations, events)
+        config_and_parser.export_general_stats(bucketed_strikes_indices, bucketed_lightning_correlations, events, config=lightning_configuration)
 
     if EXPORT_ALL_STRIKES:
-        config_and_parser.export_all_strikes(bucketed_strikes_indices, events)
+        config_and_parser.export_all_strikes(bucketed_strikes_indices, events, config=lightning_configuration)
 
     if EXPORT_ALL_STRIKES_STITCHINGS:
-        config_and_parser.export_strike_stitchings(bucketed_lightning_correlations, events)
+        config_and_parser.export_strike_stitchings(bucketed_lightning_correlations, events, config=lightning_configuration)
 
     tprint("Finished generating plots")
 
