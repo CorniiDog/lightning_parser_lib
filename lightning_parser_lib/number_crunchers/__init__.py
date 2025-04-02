@@ -13,7 +13,6 @@ from .lightning_bucketer import (
     export_as_csv,
     NUM_CORES,
     MAX_CHUNK_SIZE,
-    USE_CACHE,
     RESULT_CACHE_FILE,
 )
 from .lightning_plotters import (
