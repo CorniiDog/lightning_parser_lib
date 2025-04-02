@@ -24,7 +24,7 @@ def tprint(*args: Any, **kwargs: Any) -> None:
         >>> tprint("System initialized.")
         [03-31-2025 12:34:56] System initialized.
     """
-    timestamp = datetime.now().strftime("[%m-%d-%Y %H:%M:%S]")
+    timestamp = datetime.datetime.now(tz=datetime.timezone.utc).strftime("[%m-%d-%Y %H:%M:%S UTC]")
     print(timestamp, *args, **kwargs)
 
 def zig_zag_range(max_value: int, start: int):
