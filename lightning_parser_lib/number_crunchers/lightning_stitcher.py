@@ -61,7 +61,7 @@ def remove_correlations_that_point_to_self(correlations):
     """
     return [(p, c) for (p, c) in correlations if p != c]
 
-def stitch_lightning_strike(strike_indeces: list[int], events: pd.DataFrame, **params) -> list[Tuple[(int, int)]]:
+def stitch_lightning_strike(strike_indeces: list[int], events: pd.DataFrame, params: dict) -> list[Tuple[(int, int)]]:
     """
     Build a chain of lightning strike nodes by connecting each strike to the closest preceding strike,
     subject to thresholds on time difference, spatial distance, and speed.
@@ -69,7 +69,7 @@ def stitch_lightning_strike(strike_indeces: list[int], events: pd.DataFrame, **p
     Parameters:
       strike_indeces (list[int]): List of indices corresponding to lightning strike events.
       events (pd.DataFrame): DataFrame containing event data with columns such as "time_unix", "x", "y", and "z".
-      **params: Additional filtering parameters including:
+      params (dict): Additional filtering parameters including:
           - max_lightning_time_threshold (float): Maximum allowed time difference between consecutive points (default: 1 second).
           - max_lightning_dist (float): Maximum allowed distance between consecutive points (default: 50000 meters).
           - max_lightning_speed (float): Maximum allowed speed (default: 299792.458 m/s).
@@ -170,7 +170,7 @@ def stitch_lightning_strike(strike_indeces: list[int], events: pd.DataFrame, **p
     return correlations_filtered
 
 
-def stitch_lightning_strikes(bucketed_strike_indices: list[list[int]], events: pd.DataFrame, **params) -> list[list[Tuple[int, int]]]:
+def stitch_lightning_strikes(bucketed_strike_indices: list[list[int]], events: pd.DataFrame, params: dict) -> list[list[Tuple[int, int]]]:
     """
     Process multiple groups of lightning strike indices and generate correlations for each group.
     
@@ -181,7 +181,7 @@ def stitch_lightning_strikes(bucketed_strike_indices: list[list[int]], events: p
     Parameters:
       bucketed_strike_indices (list[list[int]]): A list where each element is a list of strike event indices representing a group.
       events (pandas.DataFrame): DataFrame containing event data.
-      **params: Additional parameters passed to stitch_lightning_strike and for combining groups, including:
+      params (dict): Additional parameters passed to stitch_lightning_strike and for combining groups, including:
           - combine_strikes_with_intercepting_times (bool): Whether to merge groups with intercepting time windows (default: True).
           - intercepting_times_extension_buffer (float): Extra time buffer (in seconds) added when checking intercepting groups (default: 10).
           - max_lightning_duration (float): Maximum allowed lightning duration for combining groups (default: 10).
@@ -194,7 +194,7 @@ def stitch_lightning_strikes(bucketed_strike_indices: list[list[int]], events: p
     # First, compute correlations for each strike group.
     bucketed_correlations = []
     for strike_indices in tqdm(bucketed_strike_indices, desc="Stitching Lightning Strikes", total=len(bucketed_strike_indices)):
-        correlations = stitch_lightning_strike(strike_indices, events, **params)
+        correlations = stitch_lightning_strike(strike_indices, events, params)
         bucketed_correlations.append(correlations)
     
     # Retrieve combining parameters.
@@ -255,7 +255,7 @@ def stitch_lightning_strikes(bucketed_strike_indices: list[list[int]], events: p
                         unique_idx_list = list(unique_idx_set)
 
                         # re-stitch with new data
-                        merged = stitch_lightning_strike(unique_idx_list, events, **params)
+                        merged = stitch_lightning_strike(unique_idx_list, events, params)
                         merged = sorted(merged, key=lambda corr: all_times[corr[0]])
                         temp_bucketed_correlations[i] = merged
                         result_found = True

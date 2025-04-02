@@ -294,7 +294,7 @@ def save_result_cache(
 
 
 def bucket_dataframe_lightnings(
-    df: pd.DataFrame, **params
+    df: pd.DataFrame, params: dict
 ) -> Tuple[List[List[int]], List[Tuple[int, int]]]:
     """
     Bucket lightning strikes in the dataframe using provided temporal and spatial parameters.
@@ -315,7 +315,7 @@ def bucket_dataframe_lightnings(
       
     Parameters:
       df (pd.DataFrame): DataFrame containing lightning event data.
-      **params: Additional keyword arguments for bucketing behavior.
+      params (dict): Additional keyword arguments for bucketing behavior.
       
     Returns:
       Tuple[List[List[int]], List[Tuple[int, int]]]: A tuple containing:
@@ -339,7 +339,7 @@ def bucket_dataframe_lightnings(
         min_pts=params.get("min_lightning_points", 300),
     )
 
-    bucketed_correlations = lightning_stitcher.stitch_lightning_strikes(raw_groups, df, **params)
+    bucketed_correlations = lightning_stitcher.stitch_lightning_strikes(raw_groups, df, params)
 
     filtered_groups: List[List[int]] = []
 
