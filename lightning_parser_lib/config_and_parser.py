@@ -107,14 +107,14 @@ def get_events(filters, config: LightningConfig) -> pd.DataFrame:
     return events
 
 
-def bucket_dataframe_lightnings(events: pd.DataFrame, config: LightningConfig, **params):
+def bucket_dataframe_lightnings(events: pd.DataFrame, config: LightningConfig, params):
     """
     Buckets events into lightning strikes based on provided parameters, using caching and multiprocessing.
 
     Args:
         events: DataFrame containing event data.
         config: An instance of LightningConfig.
-        **params: Parameters for bucketing lightning strikes.
+        params: Parameters for bucketing lightning strikes.
 
     Returns:
         tuple: (bucketed_strikes_indices, bucketed_lightning_correlations)
@@ -127,7 +127,7 @@ def bucket_dataframe_lightnings(events: pd.DataFrame, config: LightningConfig, *
     lightning_bucketer.NUM_CORES = config.num_cores
     lightning_bucketer.MAX_CHUNK_SIZE = 50000
 
-    bucketed_strikes_indices, bucketed_lightning_correlations = lightning_bucketer.bucket_dataframe_lightnings(events, **params)
+    bucketed_strikes_indices, bucketed_lightning_correlations = lightning_bucketer.bucket_dataframe_lightnings(events, params)
     if not bucketed_strikes_indices:
         tprint("Data too restrained.")
         exit()

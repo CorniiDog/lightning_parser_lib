@@ -156,7 +156,7 @@ def main():
         "intercepting_times_extension_buffer": 0.6, # Number of seconds of additional overlap to allow an additional strike to be involved
         "intercepting_times_extension_max_distance": 100000, # The max distance between the start point of one lightning strike and at least one from the entirety of another lightning strike's points
     }
-    bucketed_strikes_indices, bucketed_lightning_correlations = config_and_parser.bucket_dataframe_lightnings(events, config=lightning_configuration, **params)
+    bucketed_strikes_indices, bucketed_lightning_correlations = config_and_parser.bucket_dataframe_lightnings(events, config=lightning_configuration, params=params)
 
     # Example: To get a Pandas DataFrame of the first strike in the list, you do:
     # ```
