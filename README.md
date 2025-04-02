@@ -85,8 +85,8 @@ lightning_configuration = config_and_parser.LightningConfig(
 
 EXPORT_AS_CSV = True 
 EXPORT_GENERAL_STATS = True
-EXPORT_ALL_STRIKES = True
-EXPORT_ALL_STRIKES_STITCHINGS = True
+EXPORT_ALL_STRIKES = False
+EXPORT_ALL_STRIKES_STITCHINGS = False
 
 config_and_parser.lightning_bucketer.USE_CACHE = True
 
@@ -109,6 +109,7 @@ def main():
     # 'x'            -> float   Meters (ECEF X-coordinate in WGS84)
     # 'y'            -> float   Meters (ECEF Y-coordinate in WGS84)
     # 'z'            -> float   Meters (ECEF Z-coordinate in WGS84)
+    # `file_name`    -> str     The name of the file used that contains the point information
 
     # Mark process start time
     process_start_time = time.time()
