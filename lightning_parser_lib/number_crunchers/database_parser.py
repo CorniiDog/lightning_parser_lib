@@ -62,7 +62,7 @@ def _add_to_database(cursor, event):
     Parameters:
       cursor (sqlite3.Cursor): Database cursor used to execute SQL statements.
       event (tuple): A tuple containing event data in the following order:
-                     (time_unix, lat, lon, alt, reduced_chi2, num_stations, power_db, power, mask, stations, x, y, z)
+                     (time_unix, lat, lon, alt, reduced_chi2, num_stations, power_db, power, mask, stations, x, y, z, file_name)
 
     Returns:
       None
@@ -70,8 +70,8 @@ def _add_to_database(cursor, event):
     cursor.execute(
         """
         INSERT INTO events (
-            time_unix, lat, lon, alt, reduced_chi2, num_stations, power_db, power, mask, stations, x, y, z
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            time_unix, lat, lon, alt, reduced_chi2, num_stations, power_db, power, mask, stations, x, y, z, file_name
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """,
         event,
     )
@@ -105,15 +105,14 @@ def _create_database_if_not_exist(DB_PATH: str = "lylout_db.db"):
             stations TEXT,
             x FLOAT,
             y FLOAT,
-            z FLOAT
+            z FLOAT,
+            file_name TEXT
         )
     """
     )
 
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_time_unix ON events(time_unix)")
-    cursor.execute(
-        "CREATE INDEX IF NOT EXISTS idx_num_stations ON events(num_stations)"
-    )
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_num_stations ON events(num_stations)")
     conn.commit()
     return conn
 
@@ -332,6 +331,9 @@ def _parse_dat_extension(lylout_path: str, DB_PATH: str = "lylout_db.db"):
     conn = _create_database_if_not_exist(DB_PATH)
     cursor = conn.cursor()
 
+    # Extract filename from lylout path
+    file_name = os.path.basename(lylout_path)
+
     # Process each data line
     for line in lines[data_start_index:]:
         if not line.strip():
@@ -377,6 +379,7 @@ def _parse_dat_extension(lylout_path: str, DB_PATH: str = "lylout_db.db"):
             x,
             y,
             z,
+            file_name
         )
         
         
@@ -429,7 +432,7 @@ def cache_and_parse_database(cache_dir: str, lightning_data_folder: str, data_ex
     """
     logger.LOG_FILE = os.path.join(cache_dir, "file_log.json")
     if not toolbox.is_cached(lightning_data_folder, CACHE_PATH):
-        tprint("New dada changed. Updating database")
+        tprint("New data changed. Updating database")
         dat_file_paths = get_dat_files_paths(lightning_data_folder, data_extension)
         for file_path in dat_file_paths:
             # If the file is not already processed into the SQLite database
