@@ -46,7 +46,20 @@ def filter_correlations_by_chain_size(correlations, min_pts):
     # Filter correlations: both parent and child must be in a valid chain.
     return [(p, c) for (p, c) in correlations if p in valid_nodes and c in valid_nodes]
 
-
+def remove_correlations_that_point_to_self(correlations):
+    """
+    Remove correlations that point to the same node.
+    
+    This function filters out any correlations where the parent and child are identical,
+    which are considered self-referential and invalid.
+    
+    Parameters:
+      correlations: List of tuples (parent, child) representing connections between events.
+      
+    Returns:
+      A list of correlations with self-references removed.
+    """
+    return [(p, c) for (p, c) in correlations if p != c]
 
 def stitch_lightning_strike(strike_indeces: list[int], events: pd.DataFrame, **params) -> list[Tuple[(int, int)]]:
     """
@@ -151,6 +164,9 @@ def stitch_lightning_strike(strike_indeces: list[int], events: pd.DataFrame, **p
     # Filter out correlations that are not connected to a lightning strike that contains min_pts pts
     correlations_filtered = filter_correlations_by_chain_size(correlations, min_pts)
 
+    # Remove any correlations that point to self. This is a checkup practically
+    correlations_filtered = remove_correlations_that_point_to_self(correlations)
+
     return correlations_filtered
 
 
@@ -248,6 +264,8 @@ def stitch_lightning_strikes(bucketed_strike_indices: list[list[int]], events: p
             if not result_found:
                 temp_bucketed_correlations.append(sorted_corr)
         bucketed_correlations = temp_bucketed_correlations
+
+        
 
     return bucketed_correlations
 
