@@ -17,7 +17,6 @@ from . import lightning_stitcher
 
 # Global constants for cache handling.
 RESULT_CACHE_FILE: str = "result_cache.pkl"
-USE_CACHE: bool = True
 
 def _group_process(args_list):
     """
@@ -244,25 +243,26 @@ def delete_result_cache() -> None:
 
 def _get_result_cache(
     df: pd.DataFrame, params: dict
-) -> Optional[Tuple[List[List[int]], List[Tuple[int, int]]]]:
-    """
-    Retrieve the cached bucketing result if available.
-    
-    Parameters:
-      df (pd.DataFrame): DataFrame containing lightning event data.
-      params (dict): Bucketing parameters.
-      
-    Returns:
-      Optional[Tuple[List[List[int]], List[Tuple[int, int]]]]: Cached result if available; otherwise, None.
-    """
+) -> Optional[Tuple[List[List[int]], List[Tuple[int, int]], datetime.datetime]]:
     key = _compute_cache_key(df, params)
+    max_cache_life_days = params.get("max_cache_life_days", 30)
     if os.path.exists(RESULT_CACHE_FILE):
         try:
             with open(RESULT_CACHE_FILE, "rb") as f:
                 cache = pkl.load(f)
             if key in cache:
-                tprint("Cache hit.")
-                return cache[key]
+                filtered_groups, bucketed_correlations, time_saved = cache[key]
+                now = datetime.datetime.now(tz=datetime.timezone.utc)
+                if now - time_saved > datetime.timedelta(days=max_cache_life_days):
+                    tprint("Cached result expired. Removing outdated cache entry.")
+                    # Remove the expired cache entry and update the file.
+                    del cache[key]
+                    with open(RESULT_CACHE_FILE, "wb") as f:
+                        pkl.dump(cache, f)
+                    return None
+                else:
+                    tprint("Cache hit.")
+                    return cache[key]
         except Exception as e:
             tprint(f"Cache load error: {e}")
     return None
@@ -322,10 +322,12 @@ def bucket_dataframe_lightnings(
          - A list of lightning strike clusters (each is a list of event indices).
          - A list of correlations between event indices.
     """
-    if USE_CACHE:
+    use_cache = params.get("cache_results", False)
+
+    if use_cache:
         cached_data = _get_result_cache(df, params)
         if cached_data is not None:
-            filtered_groups, bucketed_correlations = cached_data
+            filtered_groups, bucketed_correlations, time_saved = cached_data
             tprint("Using cached result from earlier")
             return filtered_groups, bucketed_correlations
 
@@ -350,7 +352,9 @@ def bucket_dataframe_lightnings(
 
         filtered_groups.append(unique_indices)
 
-    save_result_cache(df, params, (filtered_groups, bucketed_correlations))
+    if use_cache:
+        now = datetime.datetime.now(tz=datetime.timezone.utc)
+        save_result_cache(df, params, (filtered_groups, bucketed_correlations, now))
 
     return filtered_groups, bucketed_correlations
 
