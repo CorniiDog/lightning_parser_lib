@@ -4,7 +4,7 @@ from typing import Tuple
 from tqdm import tqdm
 
 
-def filter_correlations_by_chain_size(correlations, min_pts):
+def filter_correlations_by_chain_size(correlations, min_pts, filter_point_to_self: bool = True):
     """
     Filter out correlations that do not belong to a connected chain with at least min_pts nodes.
     
@@ -44,22 +44,8 @@ def filter_correlations_by_chain_size(correlations, min_pts):
                 valid_nodes |= component
     
     # Filter correlations: both parent and child must be in a valid chain.
-    return [(p, c) for (p, c) in correlations if p in valid_nodes and c in valid_nodes]
+    return [(p, c) for (p, c) in correlations if p in valid_nodes and c in valid_nodes and (filter_point_to_self and p != c)]
 
-def remove_correlations_that_point_to_self(correlations):
-    """
-    Remove correlations that point to the same node.
-    
-    This function filters out any correlations where the parent and child are identical,
-    which are considered self-referential and invalid.
-    
-    Parameters:
-      correlations: List of tuples (parent, child) representing connections between events.
-      
-    Returns:
-      A list of correlations with self-references removed.
-    """
-    return [(p, c) for (p, c) in correlations if p != c]
 
 def stitch_lightning_strike(strike_indeces: list[int], events: pd.DataFrame, params: dict) -> list[Tuple[(int, int)]]:
     """
@@ -162,10 +148,7 @@ def stitch_lightning_strike(strike_indeces: list[int], events: pd.DataFrame, par
         parsed_indices.append(current_indice)
 
     # Filter out correlations that are not connected to a lightning strike that contains min_pts pts
-    correlations_filtered = filter_correlations_by_chain_size(correlations, min_pts)
-
-    # Remove any correlations that point to self. This is a checkup practically
-    correlations_filtered = remove_correlations_that_point_to_self(correlations)
+    correlations_filtered = filter_correlations_by_chain_size(correlations, min_pts, filter_point_to_self=True)
 
     return correlations_filtered
 
