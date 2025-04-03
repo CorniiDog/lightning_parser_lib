@@ -14,7 +14,7 @@ import numpy as np
 import pandas as pd
 from .number_crunchers import database_parser, lightning_bucketer, lightning_plotters
 from .number_crunchers.toolbox import tprint
-
+from typing import Tuple, List
 
 class LightningConfig:
     """
@@ -106,7 +106,7 @@ def get_events(filters, config: LightningConfig) -> pd.DataFrame:
     return events
 
 
-def bucket_dataframe_lightnings(events: pd.DataFrame, config: LightningConfig, params):
+def bucket_dataframe_lightnings(events: pd.DataFrame, config: LightningConfig, params) -> tuple[List[List[int]], List[Tuple[int, int]]]:
     """
     Buckets events into lightning strikes based on provided parameters, using caching and multiprocessing.
 
