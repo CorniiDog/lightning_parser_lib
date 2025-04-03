@@ -64,6 +64,11 @@ def limit_to_n_points(bucketed_strikes_indices: list[list[int]],
     filtered_correlations = [lst for lst in bucketed_lightning_correlations if len(lst) > min_points_threshold]
     return filtered_strikes, filtered_correlations
 
+def get_headers(config: LightningConfig) -> List[str]:
+    """
+    Returns a list of headers from the database
+    """
+    return database_parser.get_headers(config.db_path)
 
 def cache_and_parse(config: LightningConfig):
     """
