@@ -19,6 +19,12 @@ from plotly.subplots import make_subplots
 from .toolbox import tprint
 from . import toolbox
 
+global_shutdown_event = None
+
+def init_worker(shutdown_ev):
+    global global_shutdown_event
+    global_shutdown_event = shutdown_ev
+
 def plot_strikes_over_time(
     bucketed_strikes_indices_sorted: list[list[int]],
     events: pd.DataFrame,
@@ -350,9 +356,9 @@ def _plot_strike(args):
     Returns:
       None
     """
-    strike_indices, events, strike_dir, as_gif, sigma, transparency_threshold, shutdown_event = args
+    strike_indices, events, strike_dir, as_gif, sigma, transparency_threshold = args
 
-    if shutdown_event.is_set():
+    if global_shutdown_event and global_shutdown_event.is_set():
         return
 
     # Get the start time
@@ -397,14 +403,14 @@ def plot_all_strikes(
 
     # Prepare the argument tuples for each strike
     args_list = [
-        (strike_indices, events, strike_dir, as_gif, sigma, transparency_threshold, shutdown_event)
+        (strike_indices, events, strike_dir, as_gif, sigma, transparency_threshold)
         for strike_indices in bucketed_strike_indices
     ]
     
     try:
         if num_cores > 1:
             # Use a pool of worker processes to parallelize
-            with multiprocessing.Pool(processes=num_cores) as pool:
+            with multiprocessing.Pool(processes=num_cores, initializer=init_worker, initargs=(shutdown_event,)) as pool:
                 # Use imap so that we can attach tqdm for a progress bar
                 for _ in tqdm(pool.imap(_plot_strike, args_list), total=len(args_list)):
                     pass
@@ -715,9 +721,9 @@ def _plot_strike_stitchings(args):
     Returns:
       None.
     """
-    lightning_correlations, events, output_dir, as_gif, shutdown_event = args
+    lightning_correlations, events, output_dir, as_gif = args
 
-    if shutdown_event.is_set():
+    if global_shutdown_event and global_shutdown_event.is_set():
         return
 
     if len(lightning_correlations) == 0:
@@ -779,13 +785,13 @@ def plot_all_strike_stitchings(
     shutdown_event = multiprocessing.Event()
 
     args_list = [
-        (lightning_correlations, events, output_dir, as_gif, shutdown_event)
+        (lightning_correlations, events, output_dir, as_gif)
         for lightning_correlations in bucketed_lightning_correlations
     ]
 
     try:
         if num_cores > 1:
-            with multiprocessing.Pool(processes=num_cores) as pool:
+            with multiprocessing.Pool(processes=num_cores, initializer=init_worker, initargs=(shutdown_event,)) as pool:
                 for _ in tqdm(pool.imap(_plot_strike_stitchings, args_list), total=len(args_list)):
                     pass
         else: #Only use one core, in-line

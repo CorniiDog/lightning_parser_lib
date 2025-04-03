@@ -18,6 +18,12 @@ from . import lightning_stitcher
 # Global constants for cache handling.
 RESULT_CACHE_FILE: str = "result_cache.pkl"
 
+global_shutdown_event = None
+
+def init_worker(shutdown_ev):
+    global global_shutdown_event
+    global_shutdown_event = shutdown_ev
+
 def _group_process(args_list):
     """
     Process a subset of time groups to cluster lightning events into strikes.
@@ -41,13 +47,13 @@ def _group_process(args_list):
       List of lightning strike clusters, each represented as a list of event indices.
     """
     # Unpack input arguments.
-    all_x_values, all_y_values, all_z_values, all_unix_values, unique_groups, min_pts, group_ids, max_lightning_duration, max_dist_between_pts, max_time_threshold, min_speed, max_speed, shutdown_event = args_list
+    all_x_values, all_y_values, all_z_values, all_unix_values, unique_groups, min_pts, group_ids, max_lightning_duration, max_dist_between_pts, max_time_threshold, min_speed, max_speed = args_list
 
     lightning_strikes = []
 
     for group in unique_groups:
 
-        if shutdown_event and shutdown_event.is_set():
+        if global_shutdown_event and global_shutdown_event.is_set():
             break
 
         group_indices = np.where(group_ids == group)[0]
@@ -64,7 +70,7 @@ def _group_process(args_list):
         sub_groups = []  # Will hold potential lightning strikes for this group
 
         for j in range(len(x_vals)):
-            if shutdown_event and shutdown_event.is_set():
+            if global_shutdown_event and global_shutdown_event.is_set():
                 break
             event_x = x_vals[j]
             event_y = y_vals[j]
@@ -88,7 +94,7 @@ def _group_process(args_list):
 
             found = False
             for sg in sub_groups:
-                if shutdown_event and shutdown_event.is_set():
+                if global_shutdown_event and global_shutdown_event.is_set():
                     break
                 # Convert list to array for vectorized operations.
                 sg_unix = np.array(sg["unix"])
@@ -207,14 +213,14 @@ def _bucket_dataframe_lightnings(
     shutdown_event = multiprocessing.Event()
 
     args_list = [
-        (all_x_values, all_y_values, all_z_values, all_unix_values, chunk, min_pts, group_ids, max_lightning_duration, max_dist_between_pts, max_time_threshold, min_speed, max_speed, shutdown_event)
+        (all_x_values, all_y_values, all_z_values, all_unix_values, chunk, min_pts, group_ids, max_lightning_duration, max_dist_between_pts, max_time_threshold, min_speed, max_speed)
         for chunk in chunks
     ]
 
     try:
         lightning_strikes: List[List[int]] = []
         if NUM_CORES > 1:
-            with multiprocessing.Pool(processes=NUM_CORES) as pool:
+            with multiprocessing.Pool(processes=NUM_CORES, initializer=init_worker, initargs=(shutdown_event,)) as pool:
                 for result in tqdm(pool.imap(_group_process, iterable=args_list), desc="Processing Chunks of Buckets",total=len(args_list)):
                     lightning_strikes += result
         else:
