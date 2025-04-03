@@ -363,6 +363,9 @@ def bucket_dataframe_lightnings(
         min_pts=params.get("min_lightning_points", 300),
     )
 
+    if raw_groups == None:
+        return None, None
+
     bucketed_correlations = lightning_stitcher.stitch_lightning_strikes(raw_groups, df, params)
 
     filtered_groups: List[List[int]] = []
