@@ -228,6 +228,7 @@ def _bucket_dataframe_lightnings(
                 lightning_strikes += _group_process(args)
     except KeyboardInterrupt:
         shutdown_event.set()
+        return None
 
 
     tprint("Passed groups:", len(lightning_strikes))
