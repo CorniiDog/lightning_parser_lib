@@ -46,7 +46,6 @@ class LightningConfig:
         os.makedirs(self.lightning_data_folder, exist_ok=True)
         os.makedirs(self.cache_dir, exist_ok=True)
 
-
 def limit_to_n_points(bucketed_strikes_indices: list[list[int]],
                       bucketed_lightning_correlations: list[list[int, int]],
                       min_points_threshold: int):
@@ -159,6 +158,13 @@ def display_stats(events: pd.DataFrame, bucketed_strikes_indices: list[list[int]
     avg_bucket_size = int(total_pts / len(bucketed_strikes_indices))
     tprint(f"Average bucket size: {avg_bucket_size} points")
     tprint(f"Number of buckets: {len(bucketed_strikes_indices)}")
+
+def delete_sql_database(config: LightningConfig):
+    """
+    This function deletes the entire sql database (Excluding LYLOUT files)
+    This includes the pickled cache
+    """
+    shutil.rmtree(config.cache_dir)
 
 def delete_pkl_cache(config: LightningConfig):
     """
