@@ -350,7 +350,10 @@ def _plot_strike(args):
     Returns:
       None
     """
-    strike_indices, events, strike_dir, as_gif, sigma, transparency_threshold = args
+    strike_indices, events, strike_dir, as_gif, sigma, transparency_threshold, shutdown_event = args
+
+    if shutdown_event.is_set():
+        return
 
     # Get the start time
     start_time_unix = events.iloc[strike_indices[0]]["time_unix"]
@@ -389,21 +392,27 @@ def plot_all_strikes(
     Returns:
       None
     """
+
+    shutdown_event = multiprocessing.Event()
+
     # Prepare the argument tuples for each strike
     args_list = [
-        (strike_indices, events, strike_dir, as_gif, sigma, transparency_threshold)
+        (strike_indices, events, strike_dir, as_gif, sigma, transparency_threshold, shutdown_event)
         for strike_indices in bucketed_strike_indices
     ]
-
-    if num_cores > 1:
-        # Use a pool of worker processes to parallelize
-        with multiprocessing.Pool(processes=num_cores) as pool:
-            # Use imap so that we can attach tqdm for a progress bar
-            for _ in tqdm(pool.imap(_plot_strike, args_list), total=len(args_list)):
-                pass
-    else: # use only one core, in-line
-        for args in args_list:
-            _plot_strike(args)
+    
+    try:
+        if num_cores > 1:
+            # Use a pool of worker processes to parallelize
+            with multiprocessing.Pool(processes=num_cores) as pool:
+                # Use imap so that we can attach tqdm for a progress bar
+                for _ in tqdm(pool.imap(_plot_strike, args_list), total=len(args_list)):
+                    pass
+        else: # use only one core, in-line
+            for args in args_list:
+                _plot_strike(args)
+    except KeyboardInterrupt:
+        shutdown_event.set()
 
 
 def plot_lightning_stitch(
@@ -706,7 +715,10 @@ def _plot_strike_stitchings(args):
     Returns:
       None.
     """
-    lightning_correlations, events, output_dir, as_gif = args
+    lightning_correlations, events, output_dir, as_gif, shutdown_event = args
+
+    if shutdown_event.is_set():
+        return
 
     if len(lightning_correlations) == 0:
         return
@@ -764,18 +776,23 @@ def plot_all_strike_stitchings(
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
+    shutdown_event = multiprocessing.Event()
+
     args_list = [
-        (lightning_correlations, events, output_dir, as_gif)
+        (lightning_correlations, events, output_dir, as_gif, shutdown_event)
         for lightning_correlations in bucketed_lightning_correlations
     ]
 
-    if num_cores > 1:
-        with multiprocessing.Pool(processes=num_cores) as pool:
-            for _ in tqdm(pool.imap(_plot_strike_stitchings, args_list), total=len(args_list)):
-                pass
-    else: #Only use one core, in-line
-        for args in args_list:
-            _plot_strike_stitchings(args)
+    try:
+        if num_cores > 1:
+            with multiprocessing.Pool(processes=num_cores) as pool:
+                for _ in tqdm(pool.imap(_plot_strike_stitchings, args_list), total=len(args_list)):
+                    pass
+        else: #Only use one core, in-line
+            for args in args_list:
+                _plot_strike_stitchings(args)
+    except KeyboardInterrupt:
+        shutdown_event.set()
 
 
 
