@@ -120,7 +120,6 @@ def bucket_dataframe_lightnings(events: pd.DataFrame, config: LightningConfig, p
         tuple: (bucketed_strikes_indices, bucketed_lightning_correlations)
     """
     # Enable caching for the bucketer.
-    lightning_bucketer.USE_CACHE = True
     lightning_bucketer.RESULT_CACHE_FILE = os.path.join(config.cache_dir, "result_cache.pkl")
 
     # Set processing parameters.
@@ -161,6 +160,12 @@ def display_stats(events: pd.DataFrame, bucketed_strikes_indices: list[list[int]
     tprint(f"Average bucket size: {avg_bucket_size} points")
     tprint(f"Number of buckets: {len(bucketed_strikes_indices)}")
 
+def delete_pkl_cache(config: LightningConfig):
+    """
+    This function deletes the pickled cache
+    """
+    lightning_bucketer.RESULT_CACHE_FILE = os.path.join(config.cache_dir, "result_cache.pkl")
+    lightning_bucketer.delete_result_cache()
 
 def export_as_csv(bucketed_strikes_indices: list[list[int]], events: pd.DataFrame, config: LightningConfig):
     """
