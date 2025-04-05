@@ -39,6 +39,7 @@ from .toolbox import (
     save_cache_quick,
     is_cached,
     cpu_pct_to_cores,
+    is_mostly_text,
 )
 
 __all__ = [
@@ -83,4 +84,5 @@ __all__ = [
     "save_cache_quick",
     "is_cached",
     "cpu_pct_to_cores",
+    "is_mostly_text",
 ]

@@ -12,7 +12,7 @@ import os
 import shutil
 import numpy as np
 import pandas as pd
-from .number_crunchers import database_parser, lightning_bucketer, lightning_plotters
+from .number_crunchers import database_parser, lightning_bucketer, lightning_plotters, toolbox
 from .number_crunchers.toolbox import tprint
 from typing import Tuple, List
 from remote_functions import RemoteFunctions
@@ -51,6 +51,96 @@ class LightningConfig:
 
 server_sided_config_override: LightningConfig = None
 
+@rf.as_remote_no_queue()
+def get_lylout_files(config: LightningConfig) -> List[str]:
+   """
+    Retrieves a list of LYLOUT files from the designated lightning data folder.
+
+    This function returns the filenames contained in the lightning data folder specified
+    within the provided configuration. If a server-sited configuration override is active,
+    that configuration is used instead of the provided one.
+
+    Parameters:
+      config (LightningConfig): The configuration object that holds the path to the lightning data folder.
+
+    Returns:
+      List[str]: A list of filenames found in the lightning data folder.
+    """
+
+   if server_sided_config_override:
+       config = server_sided_config_override
+
+   return os.listdir(config.lightning_data_folder) 
+
+@rf.as_remote()
+def remove_lylout_file(config: LightningConfig, filename: str) -> bool:
+    """
+    Removes a specified LYLOUT file from the lightning data folder.
+
+    The function validates that the filename ends with the '.dat' extension and ensures that
+    the file exists in the designated folder. If the file is not found, or if the filename does
+    not meet the naming requirement, an appropriate exception is raised.
+
+    Parameters:
+      config (LightningConfig): The configuration object that holds the path to the lightning data folder.
+      filename (str): The name of the LYLOUT file to be removed (must end with ".dat").
+
+    Raises:
+      NameError: If the filename does not end with ".dat".
+      FileExistsError: If the specified file does not exist in the lightning data folder.
+    """
+    if server_sided_config_override:
+       config = server_sided_config_override
+
+    if not filename.endswith(".dat"):
+        raise NameError("The LYLOUT file should end with .dat")
+    
+    filename = str(os.path.basename(filename)) # Remove the path
+    
+    full_path = os.path.join(config.lightning_data_folder, filename)
+
+    if not os.path.exists(full_path):
+        raise FileExistsError(f"File does not exist: {filename}")
+    
+    os.remove(full_path)
+    return True
+
+@rf.as_remote()
+def upload_lylout_file(config: LightningConfig, filename: str, contents: str) -> bool:
+    """
+    Uploads a LYLOUT file by writing the provided contents into a file in the lightning data folder.
+
+    The function validates that the filename ends with ".dat" and that the contents are predominantly
+    text-like. If these validations pass, it writes the contents to a file in the designated folder.
+    In the presence of a server-sited configuration override, that configuration is used.
+
+    Parameters:
+      config (LightningConfig): The configuration object that holds the path to the lightning data folder.
+      filename (str): The name of the file to be uploaded (must end with ".dat").
+      contents (str): The text content to be written into the file.
+
+    Raises:
+      NameError: If the filename does not end with ".dat".
+      BufferError: If the contents are not considered to be mostly text.
+    """
+    if server_sided_config_override:
+       config = server_sided_config_override
+
+    if not filename.endswith(".dat"):
+        raise NameError("The LYLOUT file should end with .dat")
+    
+    filename = str(os.path.basename(filename)) # Remove the path
+    
+    if not toolbox.is_mostly_text(contents):
+        raise BufferError("The contents of the file must be mostly text.")
+    
+    full_path = os.path.join(config.lightning_data_folder, filename)
+
+    with open(full_path, "w") as f:
+        f.write(contents)
+
+    return True
+    
 @rf.as_remote_no_queue()
 def limit_to_n_points(bucketed_strikes_indices: list[list[int]],
                       bucketed_lightning_correlations: list[list[int, int]],

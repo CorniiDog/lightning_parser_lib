@@ -3,6 +3,7 @@ import pickle
 import hashlib
 from typing import List, Mapping, Any
 import datetime
+import string
 
 def tprint(*args: Any, **kwargs: Any) -> None:
     """
@@ -280,3 +281,45 @@ def lerp(start: float, end: float, t: float) -> float:
       15.0
     """
     return (1 - t) * start + t * end
+
+
+def is_mostly_text(file_path: str, threshold=0.95) -> bool:
+    """
+    Determines whether a file is predominantly composed of text-like content.
+
+    This function reads the file in binary mode and calculates the proportion of bytes
+    that are considered "text-like". A byte is deemed text-like if it belongs to the set of
+    printable ASCII characters or common whitespace characters such as newline (`\n`),
+    carriage return (`\r`), and tab (`\t`). If the proportion of such characters is equal to or
+    greater than the specified `threshold`, the function considers the file to be mostly text.
+
+    Parameters:
+      file_path (str): The path to the file to be analyzed.
+      threshold (float): A float between 0.0 and 1.0 indicating the minimum proportion of
+                         text-like characters required to classify the file as text.
+                         Default is 0.95 (95%).
+
+    Returns:
+      bool: True if the file contains at least `threshold` proportion of text-like characters,
+            False otherwise.
+
+    Example:
+      >>> is_mostly_text("readme.txt")
+      True
+
+      >>> is_mostly_text("image.png")
+      False
+    """
+    # Allow printable characters and common text control characters
+    allowed_chars = set(string.printable.encode('ascii')) | {b'\n'[0], b'\r'[0], b'\t'[0]}
+
+    with open(file_path, 'rb') as f:
+        data = f.read()
+
+    if not data:
+        return False  # empty file is not considered text
+
+    text_like = sum(1 for byte in data if byte in allowed_chars)
+    ratio = text_like / len(data)
+
+    return ratio >= threshold
