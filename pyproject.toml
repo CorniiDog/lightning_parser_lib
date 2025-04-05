@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lightning_parser_lib"
-version = "0.1.51"
+version = "0.1.52"
 authors = [
   { name="Connor White", email="connor.sw.personal@gmail.com" },
 ]
@@ -27,6 +27,8 @@ dependencies = [
   "tqdm",
   "numpy",
   "imageio",
+  "process-managerial",
+  "remote-events"
 ]
 
 [project.urls]

@@ -15,6 +15,9 @@ import pandas as pd
 from .number_crunchers import database_parser, lightning_bucketer, lightning_plotters
 from .number_crunchers.toolbox import tprint
 from typing import Tuple, List
+from remote_functions import RemoteFunctions
+
+rf = RemoteFunctions()
 
 class LightningConfig:
     """
@@ -46,9 +49,13 @@ class LightningConfig:
         os.makedirs(self.lightning_data_folder, exist_ok=True)
         os.makedirs(self.cache_dir, exist_ok=True)
 
+server_sided_config_override: LightningConfig = None
+
+@rf.as_remote()
 def limit_to_n_points(bucketed_strikes_indices: list[list[int]],
                       bucketed_lightning_correlations: list[list[int, int]],
                       min_points_threshold: int):
+    
     """
     Filters out buckets with fewer points than the specified threshold.
 
@@ -64,12 +71,16 @@ def limit_to_n_points(bucketed_strikes_indices: list[list[int]],
     filtered_correlations = [lst for lst in bucketed_lightning_correlations if len(lst) > min_points_threshold]
     return filtered_strikes, filtered_correlations
 
+@rf.as_remote()
 def get_headers(config: LightningConfig) -> List[str]:
     """
     Returns a list of headers from the database
     """
+    if server_sided_config_override:
+        config = server_sided_config_override
     return database_parser.get_headers(config.db_path)
 
+@rf.as_remote()
 def cache_and_parse(config: LightningConfig):
     """
     Retrieves LYLOUT files from the specified directory and caches the data into an SQLite database.
@@ -78,6 +89,9 @@ def cache_and_parse(config: LightningConfig):
     Args:
         config: An instance of LightningConfig containing configuration settings.
     """
+    if server_sided_config_settings:
+        config = server_sided_config_settings
+
     files = os.listdir(config.lightning_data_folder)
     if not files:
         tprint(f"Please put lightning LYLOUT files in the directory '{config.lightning_data_folder}'")
@@ -92,7 +106,7 @@ def cache_and_parse(config: LightningConfig):
     # Display available headers from the database.
     tprint("Headers:", database_parser.get_headers(config.db_path))
 
-
+@rf.as_remote()
 def get_events(filters, config: LightningConfig) -> pd.DataFrame:
     """
     Retrieves event data from the SQLite database based on the provided filters.
@@ -104,13 +118,16 @@ def get_events(filters, config: LightningConfig) -> pd.DataFrame:
     Returns:
         pd.DataFrame: DataFrame containing event data.
     """
+    if server_sided_config_override:
+        config = server_sided_config_override
+
     tprint("Obtaining datapoints from database. This may take some time...")
     events = database_parser.query_events_as_dataframe(filters, config.db_path)
     if events.empty:
         tprint("Data too restrained")
     return events
 
-
+@rf.as_remote()
 def bucket_dataframe_lightnings(events: pd.DataFrame, config: LightningConfig, params) -> tuple[List[List[int]], List[Tuple[int, int]]]:
     """
     Buckets events into lightning strikes based on provided parameters, using caching and multiprocessing.
@@ -123,6 +140,9 @@ def bucket_dataframe_lightnings(events: pd.DataFrame, config: LightningConfig, p
     Returns:
         tuple: (bucketed_strikes_indices, bucketed_lightning_correlations)
     """
+    if server_sided_config_override:
+        config = server_sided_config_override
+
     # Enable caching for the bucketer.
     lightning_bucketer.RESULT_CACHE_FILE = os.path.join(config.cache_dir, "result_cache.pkl")
 
@@ -137,7 +157,7 @@ def bucket_dataframe_lightnings(events: pd.DataFrame, config: LightningConfig, p
     tprint("Created buckets of nodes that resemble a lightning strike")
     return bucketed_strikes_indices, bucketed_lightning_correlations
 
-
+@rf.as_remote()
 def display_stats(events: pd.DataFrame, bucketed_strikes_indices: list[list[int]]):
     """
     Computes and displays statistics based on the lightning strike buckets.
@@ -164,20 +184,29 @@ def display_stats(events: pd.DataFrame, bucketed_strikes_indices: list[list[int]
     tprint(f"Average bucket size: {avg_bucket_size} points")
     tprint(f"Number of buckets: {len(bucketed_strikes_indices)}")
 
+@rf.as_remote()
 def delete_sql_database(config: LightningConfig):
     """
     This function deletes the entire sql database (Excluding LYLOUT files)
     This includes the pickled cache
     """
+    if server_sided_config_override:
+        config = server_sided_config_override
+
     shutil.rmtree(config.cache_dir)
 
+@rf.as_remote()
 def delete_pkl_cache(config: LightningConfig):
     """
     This function deletes the pickled cache
     """
+    if server_sided_config_override:
+        config = server_sided_config_override
+
     lightning_bucketer.RESULT_CACHE_FILE = os.path.join(config.cache_dir, "result_cache.pkl")
     lightning_bucketer.delete_result_cache()
 
+@rf.as_remote()
 def export_as_csv(bucketed_strikes_indices: list[list[int]], events: pd.DataFrame, config: LightningConfig):
     """
     Exports the lightning strikes data as CSV files.
@@ -187,6 +216,9 @@ def export_as_csv(bucketed_strikes_indices: list[list[int]], events: pd.DataFram
         events: DataFrame containing event data.
         config: An instance of LightningConfig.
     """
+    if server_sided_config_override:
+        config = server_sided_config_override
+
     tprint("Exporting CSV data")
     if os.path.exists(config.csv_dir):
         shutil.rmtree(config.csv_dir)
@@ -194,7 +226,7 @@ def export_as_csv(bucketed_strikes_indices: list[list[int]], events: pd.DataFram
     lightning_bucketer.export_as_csv(bucketed_strikes_indices, events, output_dir=config.csv_dir)
     tprint("Finished exporting as CSV")
 
-
+@rf.as_remote()
 def export_general_stats(bucketed_strikes_indices: list[list[int]],
                          bucketed_lightning_correlations: list[list[int, int]],
                          events: pd.DataFrame,
@@ -208,6 +240,9 @@ def export_general_stats(bucketed_strikes_indices: list[list[int]],
         events: DataFrame containing event data.
         config: An instance of LightningConfig.
     """
+    if server_sided_config_override:
+        config = server_sided_config_override
+
     os.makedirs(config.export_dir, exist_ok=True)
 
     tprint("Plotting strike points over time")
@@ -234,7 +269,7 @@ def export_general_stats(bucketed_strikes_indices: list[list[int]],
 
     tprint("Number of points within timeframe:", len(combined_strikes))
 
-
+@rf.as_remote()
 def export_all_strikes(bucketed_strikes_indices: list[list[int]], events: pd.DataFrame, config: LightningConfig):
     """
     Exports heatmap plots for all lightning strikes.
@@ -244,6 +279,9 @@ def export_all_strikes(bucketed_strikes_indices: list[list[int]], events: pd.Dat
         events: DataFrame containing event data.
         config: An instance of LightningConfig.
     """
+    if server_sided_config_override:
+        config = server_sided_config_override
+
     if os.path.exists(config.strike_dir):
         shutil.rmtree(config.strike_dir)
     os.makedirs(config.strike_dir, exist_ok=True)
@@ -255,7 +293,7 @@ def export_all_strikes(bucketed_strikes_indices: list[list[int]], events: pd.Dat
                                          as_gif=True, sigma=1.5, transparency_threshold=-1)
     tprint("Finished plotting strikes as a heatmap")
 
-
+@rf.as_remote()
 def export_strike_stitchings(bucketed_lightning_correlations: list[list[int, int]], events: pd.DataFrame, config: LightningConfig):
     """
     Exports plots and animations for stitched lightning strikes.
@@ -265,6 +303,9 @@ def export_strike_stitchings(bucketed_lightning_correlations: list[list[int, int
         events: DataFrame containing event data.
         config: An instance of LightningConfig.
     """
+    if server_sided_config_override:
+        config = server_sided_config_override
+        
     tprint("Plotting all strike stitchings")
     if os.path.exists(config.strike_stitchings_dir):
         shutil.rmtree(config.strike_stitchings_dir)

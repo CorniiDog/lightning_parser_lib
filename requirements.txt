@@ -6,3 +6,5 @@ scipy
 tqdm
 numpy
 imageio
+process-managerial
+remote-events
