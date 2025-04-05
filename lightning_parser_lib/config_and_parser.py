@@ -89,8 +89,8 @@ def cache_and_parse(config: LightningConfig):
     Args:
         config: An instance of LightningConfig containing configuration settings.
     """
-    if server_sided_config_settings:
-        config = server_sided_config_settings
+    if server_sided_config_override:
+        config = server_sided_config_override
 
     files = os.listdir(config.lightning_data_folder)
     if not files:
@@ -305,7 +305,7 @@ def export_strike_stitchings(bucketed_lightning_correlations: list[list[int, int
     """
     if server_sided_config_override:
         config = server_sided_config_override
-        
+
     tprint("Plotting all strike stitchings")
     if os.path.exists(config.strike_stitchings_dir):
         shutil.rmtree(config.strike_stitchings_dir)
