@@ -218,6 +218,38 @@ def get_events(filters, config: LightningConfig) -> pd.DataFrame:
     return events
 
 @rf.as_remote()
+def get_events_and_bucket_dataframe_lightnings(filters, config: LightningConfig, params) -> tuple[pd.DataFrame, List[List[int]], List[Tuple[int, int]]]:
+    
+    if server_sided_config_override:
+        config = server_sided_config_override
+
+    events = database_parser.query_events_as_dataframe(filters, config.db_path)
+    
+    bucketed_strikes_indices, bucketed_lightning_correlations = None, None
+    if events.empty:
+        tprint("Data too restrained")
+    else:
+        bucketed_strikes_indices, bucketed_lightning_correlations = _bucket_dataframe_lightnings(events=events, config=config, params=params)
+
+    return events, bucketed_strikes_indices, bucketed_lightning_correlations
+
+
+def _bucket_dataframe_lightnings(events, config: LightningConfig, params):
+    # Enable caching for the bucketer.
+    lightning_bucketer.RESULT_CACHE_FILE = os.path.join(config.cache_dir, "result_cache.pkl")
+
+    # Set processing parameters.
+    lightning_bucketer.NUM_CORES = config.num_cores
+    lightning_bucketer.MAX_CHUNK_SIZE = 50000
+
+    bucketed_strikes_indices, bucketed_lightning_correlations = lightning_bucketer.bucket_dataframe_lightnings(events, params)
+    if not bucketed_strikes_indices:
+        tprint("Data too restrained.")
+        exit()
+    tprint("Created buckets of nodes that resemble a lightning strike")
+    return bucketed_strikes_indices, bucketed_lightning_correlations
+
+@rf.as_remote()
 def bucket_dataframe_lightnings(events: pd.DataFrame, config: LightningConfig, params) -> tuple[List[List[int]], List[Tuple[int, int]]]:
     """
     Buckets events into lightning strikes based on provided parameters, using caching and multiprocessing.
@@ -233,19 +265,8 @@ def bucket_dataframe_lightnings(events: pd.DataFrame, config: LightningConfig, p
     if server_sided_config_override:
         config = server_sided_config_override
 
-    # Enable caching for the bucketer.
-    lightning_bucketer.RESULT_CACHE_FILE = os.path.join(config.cache_dir, "result_cache.pkl")
-
-    # Set processing parameters.
-    lightning_bucketer.NUM_CORES = config.num_cores
-    lightning_bucketer.MAX_CHUNK_SIZE = 50000
-
-    bucketed_strikes_indices, bucketed_lightning_correlations = lightning_bucketer.bucket_dataframe_lightnings(events, params)
-    if not bucketed_strikes_indices:
-        tprint("Data too restrained.")
-        exit()
-    tprint("Created buckets of nodes that resemble a lightning strike")
-    return bucketed_strikes_indices, bucketed_lightning_correlations
+    return _bucket_dataframe_lightnings(events=events, config=config, params=params)
+    
 
 def display_stats(events: pd.DataFrame, bucketed_strikes_indices: list[list[int]]):
     """
