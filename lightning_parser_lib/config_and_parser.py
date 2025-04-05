@@ -51,7 +51,7 @@ class LightningConfig:
 
 server_sided_config_override: LightningConfig = None
 
-@rf.as_remote()
+@rf.as_remote_no_queue()
 def limit_to_n_points(bucketed_strikes_indices: list[list[int]],
                       bucketed_lightning_correlations: list[list[int, int]],
                       min_points_threshold: int):
@@ -71,7 +71,7 @@ def limit_to_n_points(bucketed_strikes_indices: list[list[int]],
     filtered_correlations = [lst for lst in bucketed_lightning_correlations if len(lst) > min_points_threshold]
     return filtered_strikes, filtered_correlations
 
-@rf.as_remote()
+@rf.as_remote_no_queue()
 def get_headers(config: LightningConfig) -> List[str]:
     """
     Returns a list of headers from the database
