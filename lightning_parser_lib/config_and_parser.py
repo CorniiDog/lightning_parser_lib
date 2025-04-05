@@ -157,7 +157,6 @@ def bucket_dataframe_lightnings(events: pd.DataFrame, config: LightningConfig, p
     tprint("Created buckets of nodes that resemble a lightning strike")
     return bucketed_strikes_indices, bucketed_lightning_correlations
 
-@rf.as_remote()
 def display_stats(events: pd.DataFrame, bucketed_strikes_indices: list[list[int]]):
     """
     Computes and displays statistics based on the lightning strike buckets.
@@ -206,7 +205,6 @@ def delete_pkl_cache(config: LightningConfig):
     lightning_bucketer.RESULT_CACHE_FILE = os.path.join(config.cache_dir, "result_cache.pkl")
     lightning_bucketer.delete_result_cache()
 
-@rf.as_remote()
 def export_as_csv(bucketed_strikes_indices: list[list[int]], events: pd.DataFrame, config: LightningConfig):
     """
     Exports the lightning strikes data as CSV files.
@@ -226,7 +224,6 @@ def export_as_csv(bucketed_strikes_indices: list[list[int]], events: pd.DataFram
     lightning_bucketer.export_as_csv(bucketed_strikes_indices, events, output_dir=config.csv_dir)
     tprint("Finished exporting as CSV")
 
-@rf.as_remote()
 def export_general_stats(bucketed_strikes_indices: list[list[int]],
                          bucketed_lightning_correlations: list[list[int, int]],
                          events: pd.DataFrame,
@@ -269,7 +266,6 @@ def export_general_stats(bucketed_strikes_indices: list[list[int]],
 
     tprint("Number of points within timeframe:", len(combined_strikes))
 
-@rf.as_remote()
 def export_all_strikes(bucketed_strikes_indices: list[list[int]], events: pd.DataFrame, config: LightningConfig):
     """
     Exports heatmap plots for all lightning strikes.
@@ -293,7 +289,6 @@ def export_all_strikes(bucketed_strikes_indices: list[list[int]], events: pd.Dat
                                          as_gif=True, sigma=1.5, transparency_threshold=-1)
     tprint("Finished plotting strikes as a heatmap")
 
-@rf.as_remote()
 def export_strike_stitchings(bucketed_lightning_correlations: list[list[int, int]], events: pd.DataFrame, config: LightningConfig):
     """
     Exports plots and animations for stitched lightning strikes.
