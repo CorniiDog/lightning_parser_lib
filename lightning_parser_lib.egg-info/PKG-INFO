@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: lightning_parser_lib
-Version: 0.1.54
+Version: 0.1.56
 Summary: Connor's Lightning Parser Lib (LPL) is an extremely powerful analysis utility with a simplistic front-end in mind.
 Author-email: Connor White <connor.sw.personal@gmail.com>
 License-Expression: MIT
@@ -290,6 +290,132 @@ params = {
 ```
 
 7. Run with `python main.py` again and observe the images in their respective directories
+
+## Off-Shoring Processes
+
+
+The lightning-parser-lib comes with bindings that allow offshore processing of the
+`config_and_parser` class to another computer that is more powerful.
+
+![client_server](.img/client-server-color-icon.png)
+
+These bindings are powered by my [remote-events package here](https://pypi.org/project/remote-events/) that automates function calls to another computer
+
+### `server.py`
+
+```py
+import lightning_parser_lib.config_and_parser as config_and_parser
+from lightning_parser_lib import number_crunchers
+
+def main():
+    """
+    Main function to configure the lightning system, initialize the queue and remote functions,
+    register various tasks, start the processing system, and launch the remote functions server.
+    """
+    ##################################################################################
+    # Configuring Settings and overrides
+    ##################################################################################
+    CPU_PCT = 0.9
+    config_and_parser.server_sided_config_override = config_and_parser.LightningConfig(
+        num_cores=number_crunchers.toolbox.cpu_pct_to_cores(CPU_PCT),
+        lightning_data_folder="lylout_files",
+        data_extension=".dat",
+        cache_dir="cache_dir",
+        csv_dir="strikes_csv_files",
+        export_dir="export",
+        strike_dir="strikes",
+        strike_stitchings_dir="strike_stitchings"
+    )
+
+    config_and_parser.rf.is_queue = True # Enable queue of processing to act as a lined-up mutex
+    config_and_parser.rf.set_password("Whoop!-")
+
+
+    config_and_parser.rf.start_server(host="0.0.0.0", port=5509)
+    ##################################################################################
+
+if __name__ == "__main__":
+    main()
+
+```
+
+### `client.py`
+
+```py
+import lightning_parser_lib.config_and_parser as config_and_parser
+import pandas as pd
+import datetime
+from lightning_parser_lib.number_crunchers.toolbox import tprint
+
+
+def main():
+    config_and_parser.rf.set_password("Whoop!-")
+
+    # Replace "123.456.789.123" with the ip of the server hosting server.py
+    config_and_parser.rf.connect_to_server("123.456.789.123", 5509)
+    
+
+    dummyconfig = config_and_parser.LightningConfig() # Create dummy config for additional parsing
+
+
+    print(config_and_parser.rf.ping())
+
+    headers = config_and_parser.get_headers(config=dummyconfig)
+    print(headers)
+
+    config_and_parser.cache_and_parse(config=dummyconfig)
+
+    # Now all function calls will use the server
+
+    ####################################################################################
+    # Filter params for extracting data points from the SQLite database
+    ####################################################################################
+    start_time = datetime.datetime(2020, 4, 29, 13, 0, tzinfo=datetime.timezone.utc).timestamp()  # Timestamp converts to unix (float)
+    end_time = datetime.datetime(2020, 4, 29, 14, 59, tzinfo=datetime.timezone.utc).timestamp()  # Timestamp converts to unix (float)
+
+    # Build filter list for time_unix boundaries.
+    # Look at "List of headers" above for additional
+    # Filterings
+    filters = [
+        ("time_unix", ">=", start_time),  # In unix
+        ("time_unix", "<=", end_time),  # In unix
+        ("reduced_chi2", "<", 5.0,),  # The chi^2 (reliability index) value to accept the data
+        ("num_stations", ">=", 5),  # Number of stations that have visibly seen the strike
+        ("alt", "<=", 24000),  # alt is in meters. Therefore 20 km = 20000m
+        ("alt", ">", 0),  # Above ground
+        ("power_db", ">", -4),  # In dBW
+        ("power_db", "<", 50),  # In dBW
+    ]
+    events: pd.DataFrame = config_and_parser.get_events(filters, config=dummyconfig)
+    tprint("Events:", events)
+
+
+    params = {
+        # Creating an initial lightning strike
+        "max_lightning_dist": 30000,  # Max distance between two points to determine it being involved in the same strike
+        "max_lightning_speed": 1.4e8,  # Max speed between two points in m/s (essentially dx/dt)
+        "min_lightning_speed": 0,  # Min speed between two points in m/s (essentially dx/dt)
+        "min_lightning_points": 100,  # The minimum number of points to pass the system as a "lightning strike"
+        "max_lightning_time_threshold": 0.3,  # Max number of seconds between points 
+        "max_lightning_duration": 30, # Max seconds that define an entire lightning strike. This is essentially a "time window" for all of the points to fill the region that determines a "lightning strike"
+
+        # Combining intercepting lightning strike data filtering
+        "combine_strikes_with_intercepting_times": True, # Set to true to ensure that strikes with intercepting times get combined. 
+        "intercepting_times_extension_buffer": 0.6, # Number of seconds of additional overlap to allow an additional strike to be involved
+        "intercepting_times_extension_max_distance": 100000, # The max distance between the start point of one lightning strike and at least one from the entirety of another lightning strike's points
+
+        # Caching
+        "cache_results": True, # Set to true to cache results
+        "max_cache_life_days": 7 # The number of days to save a cache
+    }
+    bucketed_strikes_indices, bucketed_lightning_correlations = config_and_parser.bucket_dataframe_lightnings(events, config=dummyconfig, params=params)
+
+    first_lightning_strike = events.iloc[bucketed_strikes_indices[0]]
+    print(first_lightning_strike)
+
+if __name__ == "__main__":
+  main()
+```
 
 ## Useful Functions
 
