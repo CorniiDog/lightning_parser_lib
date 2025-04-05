@@ -272,7 +272,7 @@ params = {
 The lightning-parser-lib comes with bindings that allow offshore processing of the
 `config_and_parser` class to another computer that is more powerful.
 
-![client_server](.img/client-server-color-icon.png)
+![client_server](https://github.com/CorniiDog/lightning_parser_lib/raw/main/.img/client-server-color-icon.png)
 
 These bindings are powered by my [remote-events package here](https://pypi.org/project/remote-events/) that automates function calls to another computer
 

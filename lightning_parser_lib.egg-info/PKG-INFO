@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: lightning_parser_lib
-Version: 0.1.56
+Version: 0.1.57
 Summary: Connor's Lightning Parser Lib (LPL) is an extremely powerful analysis utility with a simplistic front-end in mind.
 Author-email: Connor White <connor.sw.personal@gmail.com>
 License-Expression: MIT
@@ -297,7 +297,7 @@ params = {
 The lightning-parser-lib comes with bindings that allow offshore processing of the
 `config_and_parser` class to another computer that is more powerful.
 
-![client_server](.img/client-server-color-icon.png)
+![client_server](https://github.com/CorniiDog/lightning_parser_lib/raw/main/.img/client-server-color-icon.png)
 
 These bindings are powered by my [remote-events package here](https://pypi.org/project/remote-events/) that automates function calls to another computer
 
