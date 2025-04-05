@@ -219,7 +219,24 @@ def get_events(filters, config: LightningConfig) -> pd.DataFrame:
 
 @rf.as_remote()
 def get_events_and_bucket_dataframe_lightnings(filters, config: LightningConfig, params) -> tuple[pd.DataFrame, List[List[int]], List[Tuple[int, int]]]:
-    
+    """
+    Retrieves event data and buckets lightning strikes from the events.
+
+    This function queries the event data using the provided filters and then
+    calls an internal routine to bucket the events into lightning strikes based
+    on the specified parameters. If no events are found, bucketing is skipped.
+
+    Parameters:
+      filters: Criteria to filter the event data.
+      config (LightningConfig): Configuration with paths and settings.
+      params: Parameters for the lightning bucketing process.
+
+    Returns:
+      tuple:
+        - pd.DataFrame: DataFrame of event data.
+        - List[List[int]]: Buckets of indices representing lightning strikes.
+        - List[Tuple[int, int]]: Buckets of correlated indices for strikes.
+    """
     if server_sided_config_override:
         config = server_sided_config_override
 
