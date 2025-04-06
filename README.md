@@ -281,17 +281,24 @@ These bindings are powered by my [remote-events package here](https://pypi.org/p
 ```py
 import lightning_parser_lib.config_and_parser as config_and_parser
 from lightning_parser_lib import number_crunchers
+import remote_functions
 
 def main():
     """
     Main function to configure the lightning system, initialize the queue and remote functions,
     register various tasks, start the processing system, and launch the remote functions server.
     """
+
+    # This, at the top of the main function,
+    # Allows binding all console outputs to output.txt
+    remote_functions.run_self_with_output_filename()
+
     ##################################################################################
     # Configuring Settings and overrides
     ##################################################################################
     CPU_PCT = 0.9
-    config_and_parser.server_sided_config_override = config_and_parser.LightningConfig(
+    
+    lightning_config = config_and_parser.LightningConfig(
         num_cores=number_crunchers.toolbox.cpu_pct_to_cores(CPU_PCT),
         lightning_data_folder="lylout_files",
         data_extension=".dat",
@@ -301,6 +308,10 @@ def main():
         strike_dir="strikes",
         strike_stitchings_dir="strike_stitchings"
     )
+    
+    config_and_parser.server_sided_config_override = lightning_config
+    config_and_parser.cache_and_parse(config=lightning_config)
+
 
     config_and_parser.rf.is_queue = True # Enable queue of processing to act as a lined-up mutex
     config_and_parser.rf.set_password("Whoop!-")

@@ -212,6 +212,7 @@ def get_events(filters, config: LightningConfig) -> pd.DataFrame:
         config = server_sided_config_override
 
     tprint("Obtaining datapoints from database. This may take some time...")
+
     events = database_parser.query_events_as_dataframe(filters, config.db_path)
     if events.empty:
         tprint("Data too restrained")
