@@ -291,7 +291,7 @@ def main():
 
     # This, at the top of the main function,
     # Allows binding all console outputs to output.txt
-    remote_functions.run_self_with_output_filename()
+    remote_functions.redirect_output_to_file("output.txt")
 
     ##################################################################################
     # Configuring Settings and overrides
@@ -322,6 +322,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 ```
 

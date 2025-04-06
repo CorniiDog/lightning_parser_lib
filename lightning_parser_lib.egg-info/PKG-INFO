@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: lightning_parser_lib
-Version: 0.1.62
+Version: 0.1.63
 Summary: Connor's Lightning Parser Lib (LPL) is an extremely powerful analysis utility with a simplistic front-end in mind.
 Author-email: Connor White <connor.sw.personal@gmail.com>
 License-Expression: MIT
@@ -316,7 +316,7 @@ def main():
 
     # This, at the top of the main function,
     # Allows binding all console outputs to output.txt
-    remote_functions.run_self_with_output_filename()
+    remote_functions.redirect_output_to_file("output.txt")
 
     ##################################################################################
     # Configuring Settings and overrides
@@ -347,6 +347,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 ```
 
