@@ -458,7 +458,7 @@ def export_all_strikes(bucketed_strikes_indices: list[list[int]],
         start_time_unix = times[strike_indeces[0]]
         start_time_dt = datetime.datetime.fromtimestamp(
             start_time_unix, tz=datetime.timezone.utc
-        ).strftime("%Y-%m-%d %H:%M:%S UTC")
+        ).strftime("%Y-%m-%d_%H:%M:%S_UTC")
 
         safe_start_time = re.sub(r'[<>:"/\\|?*]', '_', str(start_time_dt))
         tprint(f"Exporting basic non-stitched XLMA diagram for time {safe_start_time}")
@@ -505,7 +505,7 @@ def export_strike_stitchings(bucketed_lightning_correlations: list[list[int, int
         start_time_unix = times[strike_stitchings[0][0]]
         start_time_dt = datetime.datetime.fromtimestamp(
             start_time_unix, tz=datetime.timezone.utc
-        ).strftime("%Y-%m-%d %H:%M:%S UTC")
+        ).strftime("%Y-%m-%d_%H:%M:%S_UTC")
 
         strike_indices = set()
         for (parent_idx, child_idx) in strike_stitchings:
