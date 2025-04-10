@@ -162,17 +162,7 @@ def limit_to_n_points(bucketed_strikes_indices: list[list[int]],
     filtered_correlations = [lst for lst in bucketed_lightning_correlations if len(lst) > min_points_threshold]
     return filtered_strikes, filtered_correlations
 
-@rf.as_remote_no_queue()
-def get_headers(config: LightningConfig) -> List[str]:
-    """
-    Returns a list of headers from the database
-    """
-    if server_sided_config_override:
-        config = server_sided_config_override
-    return database_parser.get_headers(config.db_path)
-
-@rf.as_remote()
-def cache_and_parse(config: LightningConfig):
+def _cache_and_parse(config: LightningConfig):
     """
     Retrieves LYLOUT files from the specified directory and caches the data into an SQLite database.
     Exits if no data files are found.
@@ -198,6 +188,17 @@ def cache_and_parse(config: LightningConfig):
     tprint("Headers:", database_parser.get_headers(config.db_path))
 
 @rf.as_remote()
+def get_headers(config: LightningConfig) -> List[str]:
+    """
+    Returns a list of headers from the database
+    """
+    if server_sided_config_override:
+        config = server_sided_config_override
+        
+    _cache_and_parse(config) # Cache and parse
+    return database_parser.get_headers(config.db_path)
+
+@rf.as_remote()
 def get_events(filters, config: LightningConfig) -> pd.DataFrame:
     """
     Retrieves event data from the SQLite database based on the provided filters.
@@ -213,6 +214,7 @@ def get_events(filters, config: LightningConfig) -> pd.DataFrame:
         config = server_sided_config_override
 
     tprint("Obtaining datapoints from database. This may take some time...")
+    _cache_and_parse(config) # Cache and parse
 
     events = database_parser.query_events_as_dataframe(filters, config.db_path)
     if events.empty:
@@ -241,6 +243,8 @@ def get_events_and_bucket_dataframe_lightnings(filters, config: LightningConfig,
     """
     if server_sided_config_override:
         config = server_sided_config_override
+
+    _cache_and_parse(config) # Cache and parse    
 
     events = database_parser.query_events_as_dataframe(filters, config.db_path)
     

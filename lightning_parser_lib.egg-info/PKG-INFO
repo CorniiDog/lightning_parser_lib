@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: lightning_parser_lib
-Version: 0.2.31
+Version: 0.2.34
 Summary: Connor's Lightning Parser Lib (LPL) is an extremely powerful analysis utility with a simplistic front-end in mind.
 Author-email: Connor White <connor.sw.personal@gmail.com>
 License-Expression: MIT
@@ -122,9 +122,6 @@ EXPORT_ALL_STRIKES_STITCHINGS = False
 config_and_parser.lightning_bucketer.USE_CACHE = True
 
 def main():
-
-    # This parses data from "lylout_files" directory and stashes it in a database
-    config_and_parser.cache_and_parse(config=lightning_configuration)
 
     # Column/Header descriptions:
     # 'time_unix'    -> float   Seconds (Unix timestamp, UTC)
@@ -356,8 +353,6 @@ def main():
     )
     
     config_and_parser.server_sided_config_override = lightning_config
-    config_and_parser.cache_and_parse(config=lightning_config)
-
 
     config_and_parser.rf.is_queue = True # Enable queue of processing to act as a lined-up mutex
     config_and_parser.rf.set_password("Whoop!-")
@@ -394,8 +389,6 @@ def main():
 
     headers = config_and_parser.get_headers(config=dummyconfig)
     print(headers)
-
-    config_and_parser.cache_and_parse(config=dummyconfig)
 
     # Now all function calls will use the server
 

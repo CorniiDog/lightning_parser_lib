@@ -55,9 +55,6 @@ config_and_parser.lightning_bucketer.USE_CACHE = True
 
 def main():
 
-    # This parses data from "lylout_files" directory and stashes it in a database
-    config_and_parser.cache_and_parse(config=lightning_configuration)
-
     # Column/Header descriptions:
     # 'time_unix'    -> float   Seconds (Unix timestamp, UTC)
     # 'lat'          -> float   Degrees (WGS84 latitude)

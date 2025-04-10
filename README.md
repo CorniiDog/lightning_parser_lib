@@ -94,9 +94,6 @@ config_and_parser.lightning_bucketer.USE_CACHE = True
 
 def main():
 
-    # This parses data from "lylout_files" directory and stashes it in a database
-    config_and_parser.cache_and_parse(config=lightning_configuration)
-
     # Column/Header descriptions:
     # 'time_unix'    -> float   Seconds (Unix timestamp, UTC)
     # 'lat'          -> float   Degrees (WGS84 latitude)
@@ -327,8 +324,6 @@ def main():
     )
     
     config_and_parser.server_sided_config_override = lightning_config
-    config_and_parser.cache_and_parse(config=lightning_config)
-
 
     config_and_parser.rf.is_queue = True # Enable queue of processing to act as a lined-up mutex
     config_and_parser.rf.set_password("Whoop!-")
@@ -365,8 +360,6 @@ def main():
 
     headers = config_and_parser.get_headers(config=dummyconfig)
     print(headers)
-
-    config_and_parser.cache_and_parse(config=dummyconfig)
 
     # Now all function calls will use the server
 
