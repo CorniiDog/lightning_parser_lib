@@ -20,6 +20,7 @@ from remote_functions import RemoteFunctions
 from deprecation import deprecated
 import datetime
 import re
+from tqdm import tqdm
 
 rf = RemoteFunctions()
 
@@ -453,7 +454,7 @@ def export_all_strikes(bucketed_strikes_indices: list[list[int]],
     os.makedirs(config.strike_dir, exist_ok=True)
 
     times = events['time_unix']
-    for strike_indeces in bucketed_strikes_indices:
+    for strike_indeces in tqdm(bucketed_strikes_indices, desc="Processing strike indeces"):
         start_time_unix = times[strike_indeces[0]]
         start_time_dt = datetime.datetime.fromtimestamp(
             start_time_unix, tz=datetime.timezone.utc
@@ -500,7 +501,7 @@ def export_strike_stitchings(bucketed_lightning_correlations: list[list[int, int
     os.makedirs(config.strike_stitchings_dir, exist_ok=True)
 
     times = events['time_unix']
-    for strike_stitchings in bucketed_lightning_correlations:
+    for strike_stitchings in tqdm(bucketed_lightning_correlations, desc="Processing strike stitchings"):
         start_time_unix = times[strike_stitchings[0][0]]
         start_time_dt = datetime.datetime.fromtimestamp(
             start_time_unix, tz=datetime.timezone.utc
