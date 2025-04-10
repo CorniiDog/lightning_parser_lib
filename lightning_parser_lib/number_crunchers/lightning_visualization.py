@@ -422,7 +422,7 @@ class RangeParams:
 def create_strike_image(xlma_params: XLMAParams,
                         events: pd.DataFrame,
                         strike_indeces: List[int],
-                        strike_stitchings: List[Tuple[int, int]],
+                        strike_stitchings: Optional[List[Tuple[int, int]]] = None,
                         range_params: RangeParams = RangeParams()) -> Tuple[Image.Image, RangeParams]:
     """
     Create a composite lightning strike image with multiple subplots and stitching lines.
@@ -493,6 +493,23 @@ def create_strike_image(xlma_params: XLMAParams,
     ax4 = fig.add_subplot(gs[2, 1], sharey=ax3)  # Bottom right
     ax_colorbar = fig.add_subplot(gs[:, 2])  # Bottom right
 
+    ######################################################################
+    # Colorbar
+    ######################################################################
+    color_unit_specific = xlma_params.color_unit + "_cu"
+    df[color_unit_specific] = df[xlma_params.color_unit]
+    if ((xlma_params.color_unit == xlma_params.time_unit and xlma_params.zero_time_unit_if_color_unit) or xlma_params.zero_colorbar) and len(df) > 0:
+        df[color_unit_specific] -= df[xlma_params.color_unit].iloc[0]
+    
+    range_params.colorbar_range = range_params.colorbar_range or (df[color_unit_specific].min(), df[color_unit_specific].max())
+    # Compute normalization based on your data (e.g., power_db values)
+    norm = mcolors.Normalize(vmin=range_params.colorbar_range[0], vmax=range_params.colorbar_range[1])
+    # Create a ScalarMappable with the chosen colormap
+    sm = plt.cm.ScalarMappable(norm=norm, cmap=colormaps[xlma_params.colormap_scheme])
+    sm.set_array([])  # Necessary for matplotlib to handle the colorbar correctly
+
+    fig.colorbar(sm, cax=ax_colorbar, orientation='vertical', label=xlma_params.headers[xlma_params.color_unit])
+
 
     ######################################################################
     # Alt and Time Plot
@@ -503,7 +520,7 @@ def create_strike_image(xlma_params: XLMAParams,
                     y_range=range_params.alt_range)
 
     # Aggregate using mean of power_db (for overlapping points)
-    agg = cvs.points(df, xlma_params.time_unit, xlma_params.alt_unit, ds.mean(xlma_params.color_unit))
+    agg = cvs.points(df, xlma_params.time_unit, xlma_params.alt_unit, ds.mean(color_unit_specific))
     agg = agg.where(agg != 0)
     # Create Datashader image with dynamic spreading
     img = dynspread(tf.shade(agg, cmap=colormap, how='linear', span=range_params.colorbar_range), max_px=xlma_params.max_pixel_size, threshold=0.5)
@@ -531,7 +548,7 @@ def create_strike_image(xlma_params: XLMAParams,
             altitudes[altitude_group] = 0
             color_units[altitude_group] = []
         altitudes[altitude_group] += 1
-        color_units[altitude_group].append(row[xlma_params.color_unit])
+        color_units[altitude_group].append(row[color_unit_specific])
 
     alt_dict = {
         xlma_params.alt_group_unit: [],
@@ -542,7 +559,7 @@ def create_strike_image(xlma_params: XLMAParams,
     for altitude_group, num_pts in sorted(altitudes.items()):
         alt_dict[xlma_params.alt_group_unit].append(altitude_group)
         alt_dict[xlma_params.num_pts_unit].append(num_pts)
-        alt_dict[xlma_params.color_unit].append(np.mean(color_units[altitude_group]))
+        alt_dict[color_unit_specific].append(np.mean(color_units[altitude_group]))
 
     alt_df = pd.DataFrame(alt_dict)
     range_params.num_pts_range = range_params.num_pts_range or range_bufferize(alt_df[xlma_params.num_pts_unit], xlma_params.buffer_extension)
@@ -579,7 +596,7 @@ def create_strike_image(xlma_params: XLMAParams,
                     x_range=range_params.num_pts_range,
                     y_range=range_params.alt_range)
     agg = cvs.points(alt_df, xlma_params.num_pts_unit, xlma_params.alt_group_unit,
-                    ds.mean(xlma_params.color_unit))
+                    ds.mean(color_unit_specific))
     img = dynspread(tf.shade(agg, cmap=colormap, how='linear', span=range_params.colorbar_range),
                     max_px=xlma_params.altitude_graph_max_pixel_size, threshold=0.5)
     extent = (*range_params.num_pts_range, *range_params.alt_range)
@@ -597,7 +614,7 @@ def create_strike_image(xlma_params: XLMAParams,
                     y_range=range_params.y_range)
 
     # Aggregate using mean of power_db (for overlapping points)
-    agg = cvs.points(df, xlma_params.x_unit, xlma_params.y_unit, ds.mean(xlma_params.color_unit))
+    agg = cvs.points(df, xlma_params.x_unit, xlma_params.y_unit, ds.mean(color_unit_specific))
 
     # Create Datashader image with dynamic spreading
     img = dynspread(tf.shade(agg, cmap=colormap, how='linear', span=range_params.colorbar_range), max_px=xlma_params.max_pixel_size, threshold=0.5)
@@ -631,7 +648,7 @@ def create_strike_image(xlma_params: XLMAParams,
                     y_range=range_params.y_range)
 
     # Aggregate using mean of power_db (for overlapping points)
-    agg = cvs.points(df, xlma_params.alt_unit, xlma_params.y_unit, ds.mean(xlma_params.color_unit))
+    agg = cvs.points(df, xlma_params.alt_unit, xlma_params.y_unit, ds.mean(color_unit_specific))
 
     # Create Datashader image with dynamic spreading
     img = dynspread(tf.shade(agg, cmap=colormap, how='linear', span=range_params.colorbar_range), max_px=xlma_params.max_pixel_size, threshold=0.5)
@@ -664,7 +681,7 @@ def create_strike_image(xlma_params: XLMAParams,
                     y_range=range_params.alt_range)
 
     # Aggregate using mean of power_db (for overlapping points)
-    agg = cvs.points(df, xlma_params.x_unit, xlma_params.alt_unit, ds.mean(xlma_params.color_unit))
+    agg = cvs.points(df, xlma_params.x_unit, xlma_params.alt_unit, ds.mean(color_unit_specific))
 
     # Create Datashader image with dynamic spreading
     img = dynspread(tf.shade(agg, cmap=colormap, how='linear', span=range_params.colorbar_range), max_px=xlma_params.max_pixel_size, threshold=0.5)
@@ -687,21 +704,6 @@ def create_strike_image(xlma_params: XLMAParams,
         ax1.add_collection(lc)
 
     ax1.set_ylabel(xlma_params.headers[xlma_params.alt_unit])
-
-    ######################################################################
-    # Colorbar
-    ######################################################################
-    if ((xlma_params.color_unit == xlma_params.time_unit and xlma_params.zero_time_unit_if_color_unit) or xlma_params.zero_colorbar) and len(df) > 0:
-        df[xlma_params.color_unit] -= df[xlma_params.color_unit].iloc[0]
-
-    range_params.colorbar_range = range_params.colorbar_range or (df[xlma_params.color_unit].min(), df[xlma_params.color_unit].max())
-    # Compute normalization based on your data (e.g., power_db values)
-    norm = mcolors.Normalize(vmin=range_params.colorbar_range[0], vmax=range_params.colorbar_range[1])
-    # Create a ScalarMappable with the chosen colormap
-    sm = plt.cm.ScalarMappable(norm=norm, cmap=colormaps[xlma_params.colormap_scheme])
-    sm.set_array([])  # Necessary for matplotlib to handle the colorbar correctly
-
-    fig.colorbar(sm, cax=ax_colorbar, orientation='vertical', label=xlma_params.headers[xlma_params.color_unit])
 
     ######################################################################
     # Aspect ratio adjustment

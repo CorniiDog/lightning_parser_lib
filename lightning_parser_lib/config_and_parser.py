@@ -385,14 +385,14 @@ def export_general_stats(bucketed_strikes_indices: list[list[int]],
     export_path = os.path.join(config.export_dir, "most_pts_xlma.tiff")
     export_strike_image(strike_image, export_path)
 
+    strike_gif, _ = create_strike_gif(xlma_params, events, largest_strike, largest_stitch)
+    export_path = os.path.join(config.export_dir, "most_pts_xlma.gif")
+    export_strike_gif(strike_gif, export_path)
+
     tprint("Exporting largest instance")
     export_path = os.path.join(config.export_dir, "most_pts")
     lightning_plotters.plot_avg_power_map(largest_strike, events, output_filename=export_path + ".png", transparency_threshold=-1)
     lightning_plotters.generate_strike_gif(largest_strike, events, output_filename=export_path + ".gif", transparency_threshold=-1)
-
-    strike_gif, _ = create_strike_gif(xlma_params, events, largest_strike, largest_stitch)
-    export_path = os.path.join(config.export_dir, "most_pts_xlma.gif")
-    export_strike_gif(strike_gif, export_path)
 
     tprint("Exporting largest stitched instance")
     export_path = os.path.join(config.export_dir, "most_pts_stitched")
