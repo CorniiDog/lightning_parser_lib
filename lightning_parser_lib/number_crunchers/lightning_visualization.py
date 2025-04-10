@@ -52,6 +52,7 @@ from matplotlib.collections import LineCollection
 import io
 import imageio
 import geopandas as gpd
+from shapely.geometry import box
 
 
 def main():
@@ -251,10 +252,16 @@ def range_bufferize(list_items: list[float], l_buffer_extension: float) -> Tuple
 
 class XLMAParams:
     """
-    Parameter container for lightning strike visualizations.
+    Parameter container for configuring lightning strike visualizations.
 
-    Holds configuration parameters for the various aspects of plotting and data processing,
-    including Datashader resolutions, colormap settings, axis labels, and more.
+    This class encapsulates configuration parameters for a comprehensive lightning strike visualization pipeline,
+    incorporating options for data processing, rendering resolution, and stylistic control for both Datashader and
+    Matplotlib components. The parameters determine how raw lightning event data is processed and depicted across
+    multiple subplots, covering aspects such as temporal evolution, altitude profiles, spatial distributions, and
+    aggregated statistics. They govern not only the graphical representation—such as colormap conversion, dynamic point 
+    spreading, and plotting resolution—but also the overlaying of stitching lines and geographical boundaries (e.g., 
+    counties, cities) using external shapefiles.
+        
     """
 
     def __init__(self,
@@ -286,39 +293,50 @@ class XLMAParams:
             figure_size: Tuple[int, int] = (7, 7),
             cartopy_paths: List[str] = None,
             tiger_path: str = None,
+            county_line_alpha=0.1,
+            county_line_width=1,
+            county_text_font_size=3,
+            county_text_color='lime',
+            county_text_alpha=1,
             headers: Dict[str, str] = None):
         """
         Initialize the XLMAParams instance with visualization parameters.
 
         Parameters:
-            time_as_datetime (bool): Whether to treat the time unit as datetime values.
-            points_resolution_multiplier (int): Multiplier to scale the resolution of point plots.
-            max_pixel_size (int): Maximum pixel size for Datashader's dynamic spreading.
-            altitude_group_size (int): Grouping interval for altitude values.
-            altitude_graph_max_pixel_size (int): Maximum pixel size for altitude graphs.
-            altitude_graph_line_thickness (float): Line thickness for altitude graph connections.
-            altitude_graph_alpha (float): Transparency level for stitching the num and altitude graph
-            altitude_graph_resolution_multiplier (int): Resolution multiplier for altitude graphs.
-            buffer_extension (float): Fractional extension to the data ranges for padding.
-            stitching_line_thickness (float): Line thickness for stitching lines.
-            stitching_alpha (float): Transparency level for stitching lines.
-            colormap_scheme (str): Name of the Matplotlib colormap to use.
-            font_size (int): Font size for plot labels.
-            dark_theme (bool): Whether to use a dark theme for Matplotlib.
-            time_unit (str): Column name for time data.
-            alt_unit (str): Column name for altitude data.
-            x_unit (str): Column name for x (longitude) data.
-            y_unit (str): Column name for y (latitude) data.
-            color_unit (str): Column name for color mapping data.
-            zero_time_unit_if_color_unit (bool): Whether to normalize time if it is used as the color unit.
-            zero_colorbar (bool): Whether to force the colorbar to zero.
-            num_pts_unit (str): Label for the number of points.
-            alt_group_unit (str): Label for altitude grouping.
-            dpi (int): Dots per inch resolution for saved images.
-            title (str): Plot title.
-            figure_size (Tuple[int, int]): Figure dimensions (width, height) in inches.
-            cartopy_paths (List[str]): The paths to cartopy (country boundaries): https://www.naturalearthdata.com/downloads/110m-cultural-vectors/
-            headers (Dict[str, str], optional): Dictionary mapping column names to header labels.
+            time_as_datetime (bool): If True, interpret time data as datetime objects; otherwise, treat as numeric timestamps.
+            points_resolution_multiplier (int): Multiplier to scale the resolution of point plots in Datashader.
+            max_pixel_size (int): Maximum pixel size for Datashader's dynamic spreading effect.
+            altitude_group_size (int): Interval used to group altitude values for aggregation and visualization.
+            altitude_graph_max_pixel_size (int): Maximum pixel size applied to the aggregated altitude graph.
+            altitude_graph_line_thickness (float): Line thickness used to connect points in the altitude graph.
+            altitude_graph_alpha (float): Transparency level for altitude graph stitching lines and overlays.
+            altitude_graph_resolution_multiplier (int): Resolution multiplier specific to the altitude plot to adjust detail.
+            buffer_extension (float): Fractional extension to the data range to add as padding on the plot axes.
+            stitching_line_thickness (float): Line thickness for stitching lines connecting sequential lightning events.
+            stitching_alpha (float): Transparency level for stitching lines between events.
+            colormap_scheme (str): Name of the Matplotlib colormap to convert into hex color codes for Datashader.
+            font_size (int): Font size for all plot text elements, including labels and annotations.
+            dark_theme (bool): If True, applies a dark background theme to the plots.
+            time_unit (str): Column name for the time values in the lightning event DataFrame.
+            alt_unit (str): Column name for altitude values in the event DataFrame.
+            x_unit (str): Column name for the x-axis coordinate (typically longitude) in the event DataFrame.
+            y_unit (str): Column name for the y-axis coordinate (typically latitude) in the event DataFrame.
+            color_unit (str): Column name used for determining color mapping of the events; may be the same as time_unit.
+            zero_time_unit_if_color_unit (bool): If True and time is used for color mapping, adjusts the time values to start at zero.
+            zero_colorbar (bool): If True, forces the colorbar to start at zero regardless of the data range.
+            num_pts_unit (str): Identifier for the number of points metric, used in aggregated statistical plots.
+            alt_group_unit (str): Label for altitude grouping applied during data aggregation.
+            dpi (int): Dots per inch resolution for saving the output visualization.
+            title (str): The title of the visualization to be rendered on the final image.
+            figure_size (Tuple[int, int]): Dimensions (width, height in inches) of the resulting figure.
+            cartopy_paths (List[str]): List of file paths to geographical boundary shapefiles (e.g., counties, cities) for overlaying on the plot.
+            tiger_path (str): File path to TIGER/Line shapefiles used for detailed geographical features.
+            county_line_alpha (float): Transparency level for drawn county boundary lines.
+            county_line_width (float): Line width used when rendering county boundaries.
+            county_text_font_size (int): Font size for county name labels on the map.
+            county_text_color (str): Color for county name annotations; can be a hex code (e.g., "#39FF14" for neon green) or a named color.
+            county_text_alpha (float): The alpha for showing text
+            headers (Dict[str, str]): Dictionary mapping data column names to human-readable header labels for axes and legends.
         """
 
         self.time_as_datetime = time_as_datetime
@@ -349,6 +367,11 @@ class XLMAParams:
         self.figure_size = figure_size
         self.cartopy_paths = cartopy_paths
         self.tiger_path = tiger_path
+        self.county_line_alpha=county_line_alpha
+        self.county_line_width=county_line_width
+        self.county_text_font_size=county_text_font_size
+        self.county_text_color=county_text_color
+        self.county_text_alpha = county_text_alpha
         
         # Default headers
         self.headers = {
@@ -645,8 +668,27 @@ def create_strike_image(xlma_params: XLMAParams,
 
     if xlma_params.cartopy_paths:
         for path in xlma_params.cartopy_paths:
-            element = gpd.read_file(path)
-            element.boundary.plot(ax=ax3, edgecolor=marker_color, linewidth=1, zorder=2, alpha=0.2)
+            counties = gpd.read_file(path)
+
+            bounding_box = box(range_params.x_range[0], range_params.y_range[0], range_params.x_range[1], range_params.y_range[1])  # Example: part of South Texas
+
+            # Filter counties that intersect with bounding box
+            counties_in_box = counties[counties.geometry.intersects(bounding_box)]
+
+            counties_in_box.boundary.plot(ax=ax3, edgecolor=marker_color, linewidth=xlma_params.county_line_width, zorder=2, alpha=xlma_params.county_line_alpha)
+            # Add county name labels
+            for idx, row in counties_in_box.iterrows():
+                centroid = row.geometry.centroid
+                
+                x_buffer_size = (range_params.x_range[1] - range_params.x_range[0]) * xlma_params.buffer_extension
+                y_buffer_size = (range_params.y_range[1] - range_params.y_range[0]) * xlma_params.buffer_extension
+
+                in_x_bounds = range_params.x_range[1] - x_buffer_size > centroid.x > range_params.x_range[0] + x_buffer_size
+                in_y_bounds = range_params.y_range[1] - y_buffer_size > centroid.y > range_params.y_range[0] + y_buffer_size
+                if not in_x_bounds or not in_y_bounds:
+                    continue
+
+                ax3.text(centroid.x, centroid.y, row['NAME'], ha='center', color=xlma_params.county_text_color, fontsize=xlma_params.county_text_font_size, alpha=xlma_params.county_text_alpha)
 
 
     ax3.set_xlabel(xlma_params.headers[xlma_params.x_unit])
