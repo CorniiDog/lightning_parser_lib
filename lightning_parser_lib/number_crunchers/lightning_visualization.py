@@ -36,7 +36,7 @@ import pandas as pd
 import datashader as ds
 import datashader.transfer_functions as tf
 from datashader.utils import lnglat_to_meters
-from datashader.transfer_functions import dynspread
+from datashader.transfer_functions import spread
 from matplotlib import colormaps, rcParams
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
@@ -266,10 +266,10 @@ class XLMAParams:
 
     def __init__(self,
             time_as_datetime: bool = True,
-            points_resolution_multiplier: int = 3,
-            max_pixel_size: int = 3,
+            points_resolution_multiplier: int = 5,
+            max_pixel_size: int = 1,
             altitude_group_size: int = 100,
-            altitude_graph_max_pixel_size: int = 2,
+            altitude_graph_max_pixel_size: int = 1,
             altitude_graph_line_thickness: float = 0.5,
             altitude_graph_alpha = 0.5,
             altitude_graph_resolution_multiplier: int = 1,
@@ -553,7 +553,7 @@ def create_strike_image(xlma_params: XLMAParams,
     agg = cvs.points(df, xlma_params.time_unit, xlma_params.alt_unit, ds.mean(color_unit_specific))
     agg = agg.where(agg != 0)
     # Create Datashader image with dynamic spreading
-    img = dynspread(tf.shade(agg, cmap=colormap, how='linear', span=range_params.colorbar_range), max_px=xlma_params.max_pixel_size, threshold=0.5)
+    img = spread(tf.shade(agg, cmap=colormap, how='linear', span=range_params.colorbar_range), px=xlma_params.max_pixel_size)
 
     if range_params.time_unit_datetime_range:
         extent = (*range_params.time_unit_datetime_range, *range_params.alt_range)
@@ -627,8 +627,8 @@ def create_strike_image(xlma_params: XLMAParams,
                     y_range=range_params.alt_range)
     agg = cvs.points(alt_df, xlma_params.num_pts_unit, xlma_params.alt_group_unit,
                     ds.mean(color_unit_specific))
-    img = dynspread(tf.shade(agg, cmap=colormap, how='linear', span=range_params.colorbar_range),
-                    max_px=xlma_params.altitude_graph_max_pixel_size, threshold=0.5)
+    img = spread(tf.shade(agg, cmap=colormap, how='linear', span=range_params.colorbar_range),
+                    px=xlma_params.altitude_graph_max_pixel_size)
     extent = (*range_params.num_pts_range, *range_params.alt_range)
     ax2.imshow(X=img.to_pil(), extent=extent, origin='upper', zorder=3)
     ax2.set_xlabel(xlma_params.headers[xlma_params.num_pts_unit])
@@ -647,7 +647,7 @@ def create_strike_image(xlma_params: XLMAParams,
     agg = cvs.points(df, xlma_params.x_unit, xlma_params.y_unit, ds.mean(color_unit_specific))
 
     # Create Datashader image with dynamic spreading
-    img = dynspread(tf.shade(agg, cmap=colormap, how='linear', span=range_params.colorbar_range), max_px=xlma_params.max_pixel_size, threshold=0.5)
+    img = spread(tf.shade(agg, cmap=colormap, how='linear', span=range_params.colorbar_range), px=xlma_params.max_pixel_size)
 
     extent = (*range_params.x_range, *range_params.y_range)
     ax3.imshow(X=img.to_pil(), extent=extent, origin='upper', zorder=4)
@@ -706,7 +706,7 @@ def create_strike_image(xlma_params: XLMAParams,
     agg = cvs.points(df, xlma_params.alt_unit, xlma_params.y_unit, ds.mean(color_unit_specific))
 
     # Create Datashader image with dynamic spreading
-    img = dynspread(tf.shade(agg, cmap=colormap, how='linear', span=range_params.colorbar_range), max_px=xlma_params.max_pixel_size, threshold=0.5)
+    img = spread(tf.shade(agg, cmap=colormap, how='linear', span=range_params.colorbar_range), px=xlma_params.max_pixel_size)
 
     extent = (*range_params.alt_range, *range_params.y_range)
     ax4.imshow(X=img.to_pil(), extent=extent, origin='upper', zorder=3)
@@ -739,7 +739,7 @@ def create_strike_image(xlma_params: XLMAParams,
     agg = cvs.points(df, xlma_params.x_unit, xlma_params.alt_unit, ds.mean(color_unit_specific))
 
     # Create Datashader image with dynamic spreading
-    img = dynspread(tf.shade(agg, cmap=colormap, how='linear', span=range_params.colorbar_range), max_px=xlma_params.max_pixel_size, threshold=0.5)
+    img = spread(tf.shade(agg, cmap=colormap, how='linear', span=range_params.colorbar_range), px=xlma_params.max_pixel_size)
 
     extent = (*range_params.x_range, *range_params.alt_range)
     ax1.imshow(X=img.to_pil(), extent=extent, origin='upper', zorder=3)
