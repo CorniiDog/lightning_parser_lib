@@ -377,15 +377,25 @@ def export_general_stats(bucketed_strikes_indices: list[list[int]],
     export_path = os.path.join(config.export_dir, "strike_pts_over_time")
     lightning_plotters.plot_strikes_over_time(bucketed_strikes_indices, events, output_filename=export_path + ".png")
 
+    largest_strike = max(bucketed_strikes_indices, key=len)
+    largest_stitch = max(bucketed_lightning_correlations, key=len)
+
+    tprint("Exporting XLMA diagram of largest Instance")
+    strike_image, _ = create_strike_image(xlma_params, events, largest_strike, largest_stitch)
+    export_path = os.path.join(config.export_dir, "most_pts_xlma.tiff")
+    export_strike_image(strike_image, export_path)
+
     tprint("Exporting largest instance")
     export_path = os.path.join(config.export_dir, "most_pts")
-    largest_strike = max(bucketed_strikes_indices, key=len)
     lightning_plotters.plot_avg_power_map(largest_strike, events, output_filename=export_path + ".png", transparency_threshold=-1)
     lightning_plotters.generate_strike_gif(largest_strike, events, output_filename=export_path + ".gif", transparency_threshold=-1)
 
+    strike_gif, _ = create_strike_gif(xlma_params, events, largest_strike, largest_stitch)
+    export_path = os.path.join(config.export_dir, "most_pts_xlma.gif")
+    export_strike_gif(strike_gif, export_path)
+
     tprint("Exporting largest stitched instance")
     export_path = os.path.join(config.export_dir, "most_pts_stitched")
-    largest_stitch = max(bucketed_lightning_correlations, key=len)
     lightning_plotters.plot_lightning_stitch(largest_stitch, events, export_path + ".png")
     lightning_plotters.plot_lightning_stitch_gif(largest_stitch, events, output_filename=export_path + ".gif")
 
@@ -395,14 +405,6 @@ def export_general_stats(bucketed_strikes_indices: list[list[int]],
     lightning_plotters.plot_avg_power_map(combined_strikes, events, output_filename=export_path + ".png", transparency_threshold=-1)
     lightning_plotters.generate_strike_gif(combined_strikes, events, output_filename=export_path + ".gif", transparency_threshold=-1)
 
-    tprint("Exporting XLMA Diagram")
-    strike_image, _ = create_strike_image(xlma_params, events, largest_strike, largest_stitch)
-    export_path = os.path.join(config.export_dir, "most_pts_xlma.tiff")
-    export_strike_image(strike_image, export_path)
-
-    strike_gif, _ = create_strike_gif(xlma_params, events, largest_strike, largest_stitch)
-    export_path = os.path.join(config.export_dir, "most_pts_xlma.gif")
-    export_strike_gif(strike_gif, export_path)
 
 
     tprint("Number of points within timeframe:", len(combined_strikes))

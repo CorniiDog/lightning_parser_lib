@@ -360,7 +360,8 @@ class XLMAParams:
             'x': 'Meters (ECEF X WGS84)',
             'y': 'Meters (ECEF Y WGS84)',
             'z': 'Meters (ECEF Z WGS84)',
-            'file_name': 'File Name'
+            'file_name': 'File Name',
+            'id': 'Row Identification'
         }
         # Replace or Add new Headers
         if headers:
@@ -834,7 +835,7 @@ def create_strike_gif(
         # If strike_stitchings is provided, filter for those with both endpoints within the current cutoff.
         if strike_stitchings is not None:
             partial_stitchings = [
-                (i1, i2) for (i1, i2) in strike_stitchings if i1 < cutoff and i2 < cutoff
+                (i1, i2) for (i1, i2) in strike_stitchings if i1 < cutoff and i2 <= cutoff
             ]
         else:
             partial_stitchings = None
