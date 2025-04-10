@@ -395,6 +395,7 @@ def export_general_stats(bucketed_strikes_indices: list[list[int]],
     lightning_plotters.plot_avg_power_map(combined_strikes, events, output_filename=export_path + ".png", transparency_threshold=-1)
     lightning_plotters.generate_strike_gif(combined_strikes, events, output_filename=export_path + ".gif", transparency_threshold=-1)
 
+    tprint("Exporting XLMA Diagram")
     strike_image, _ = create_strike_image(xlma_params, events, largest_strike, largest_stitch)
     export_path = os.path.join(config.export_dir, "most_pts_xlma.tiff")
     export_strike_image(strike_image, export_path)
