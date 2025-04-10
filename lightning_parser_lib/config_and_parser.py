@@ -514,7 +514,7 @@ def export_strike_stitchings(bucketed_lightning_correlations: list[list[int, int
         strike_indices = list(strike_indices)
 
         safe_start_time = re.sub(r'[<>:"/\\|?*]', '_', str(start_time_dt))
-        tprint(f"Exporting basic non-stitched XLMA diagram for time {safe_start_time}")
+        tprint(f"Exporting basic stitched XLMA diagram for time {safe_start_time}")
 
         file_out_path = os.path.join(config.strike_dir, safe_start_time) + ".tiff"
 
