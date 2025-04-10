@@ -458,7 +458,7 @@ def export_all_strikes(bucketed_strikes_indices: list[list[int]],
         start_time_unix = times[strike_indeces[0]]
         start_time_dt = datetime.datetime.fromtimestamp(
             start_time_unix, tz=datetime.timezone.utc
-        ).strftime("%Y-%m-%d_%H:%M:%S_UTC")
+        ).strftime("%Y-%m-%d %H:%M:%S UTC")
 
         safe_start_time = re.sub(r'[<>:"/\\|?*]', '_', str(start_time_dt))
         tprint(f"Exporting basic non-stitched XLMA diagram for time {safe_start_time}")
@@ -466,8 +466,7 @@ def export_all_strikes(bucketed_strikes_indices: list[list[int]],
         file_out_path = os.path.join(config.strike_dir, safe_start_time) + ".tiff"
 
         strike_image, _ = create_strike_image(xlma_params, events, strike_indeces, None)
-        export_path = os.path.join(config.export_dir, file_out_path)
-        export_strike_image(strike_image, export_path)
+        export_strike_image(strike_image, file_out_path)
 
             
     if _include_deprecated:
@@ -505,7 +504,7 @@ def export_strike_stitchings(bucketed_lightning_correlations: list[list[int, int
         start_time_unix = times[strike_stitchings[0][0]]
         start_time_dt = datetime.datetime.fromtimestamp(
             start_time_unix, tz=datetime.timezone.utc
-        ).strftime("%Y-%m-%d_%H:%M:%S_UTC")
+        ).strftime("%Y-%m-%d %H:%M:%S UTC")
 
         strike_indices = set()
         for (parent_idx, child_idx) in strike_stitchings:
@@ -519,8 +518,7 @@ def export_strike_stitchings(bucketed_lightning_correlations: list[list[int, int
         file_out_path = os.path.join(config.strike_dir, safe_start_time) + ".tiff"
 
         strike_image, _ = create_strike_image(xlma_params, events, strike_indices, strike_stitchings)
-        export_path = os.path.join(config.export_dir, file_out_path)
-        export_strike_image(strike_image, export_path)
+        export_strike_image(strike_image, file_out_path)
 
     if _include_deprecated:
         lightning_plotters.plot_all_strike_stitchings(bucketed_lightning_correlations, events, config.strike_stitchings_dir, config.num_cores)
