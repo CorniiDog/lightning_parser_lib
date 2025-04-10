@@ -8,3 +8,6 @@ numpy
 imageio
 process-managerial
 remote-events
+datashader
+matplotlib
+holoviews
