@@ -13,5 +13,6 @@ lightning_parser_lib/number_crunchers/database_parser.py
 lightning_parser_lib/number_crunchers/lightning_bucketer.py
 lightning_parser_lib/number_crunchers/lightning_plotters.py
 lightning_parser_lib/number_crunchers/lightning_stitcher.py
+lightning_parser_lib/number_crunchers/lightning_visualization.py
 lightning_parser_lib/number_crunchers/logger.py
 lightning_parser_lib/number_crunchers/toolbox.py

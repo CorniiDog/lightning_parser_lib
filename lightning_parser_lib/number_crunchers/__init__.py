@@ -42,6 +42,21 @@ from .toolbox import (
     is_mostly_text,
 )
 
+from .lightning_visualization import (
+    main,
+    colormap_to_hex,
+    forceAspect,
+    conditional_formatter_factory,
+    custom_time_formatter,
+    range_bufferize,
+    XLMAParams,
+    RangeParams,
+    create_strike_image,
+    create_strike_gif,
+    export_strike_image,
+    export_strike_gif,
+)
+
 __all__ = [
     # database_parser
     "get_dat_files_paths",
@@ -57,7 +72,6 @@ __all__ = [
     "export_as_csv",
     "NUM_CORES",
     "MAX_CHUNK_SIZE",
-    "USE_CACHE",
     "RESULT_CACHE_FILE",
     # lightning_plotters
     "plot_strikes_over_time",
@@ -85,4 +99,17 @@ __all__ = [
     "is_cached",
     "cpu_pct_to_cores",
     "is_mostly_text",
+    # lightning_visualization
+    "main",
+    "colormap_to_hex",
+    "forceAspect",
+    "conditional_formatter_factory",
+    "custom_time_formatter",
+    "range_bufferize",
+    "XLMAParams",
+    "RangeParams",
+    "create_strike_image",
+    "create_strike_gif",
+    "export_strike_image",
+    "export_strike_gif",
 ]
