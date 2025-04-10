@@ -645,7 +645,7 @@ def create_strike_image(xlma_params: XLMAParams,
 
     if xlma_params.cartopy_paths:
         for path in xlma_params.cartopy_paths:
-            element = gpd.read_file(xlma_params.path)
+            element = gpd.read_file(path)
             element.boundary.plot(ax=ax3, edgecolor=marker_color, linewidth=1, zorder=2, alpha=0.2)
 
 
