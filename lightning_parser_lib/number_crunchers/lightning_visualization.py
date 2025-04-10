@@ -837,7 +837,7 @@ def create_strike_gif(
         # If strike_stitchings is provided, filter for those with both endpoints within the current cutoff.
         if strike_stitchings is not None:
             partial_stitchings = [
-                (i1, i2) for (i1, i2) in strike_stitchings if i1 < cutoff and i2 <= cutoff
+                (i1, i2) for (i1, i2) in strike_stitchings if i1 in strike_indeces and i2 in strike_indeces
             ]
         else:
             partial_stitchings = None
