@@ -51,6 +51,8 @@ from PIL import Image
 from matplotlib.collections import LineCollection
 import io
 import imageio
+import geopandas as gpd
+
 
 def main():
     """
@@ -127,7 +129,7 @@ def main():
     plt.axis('off')  # Hide the axis
     plt.show()
 
-    plt.close()
+    plt.clf()
 
 
 def colormap_to_hex(cmap_name: str) -> List[str]:
@@ -282,6 +284,8 @@ class XLMAParams:
             dpi: int = 300,
             title: str = "LYLOUT LMA",
             figure_size: Tuple[int, int] = (7, 7),
+            cartopy_paths: List[str] = None,
+            tiger_path: str = None,
             headers: Dict[str, str] = None):
         """
         Initialize the XLMAParams instance with visualization parameters.
@@ -313,6 +317,7 @@ class XLMAParams:
             dpi (int): Dots per inch resolution for saved images.
             title (str): Plot title.
             figure_size (Tuple[int, int]): Figure dimensions (width, height) in inches.
+            cartopy_paths (List[str]): The paths to cartopy (country boundaries): https://www.naturalearthdata.com/downloads/110m-cultural-vectors/
             headers (Dict[str, str], optional): Dictionary mapping column names to header labels.
         """
 
@@ -342,6 +347,8 @@ class XLMAParams:
         self.dpi = dpi
         self.title = title
         self.figure_size = figure_size
+        self.cartopy_paths = cartopy_paths
+        self.tiger_path = tiger_path
         
         # Default headers
         self.headers = {
@@ -620,7 +627,7 @@ def create_strike_image(xlma_params: XLMAParams,
     img = dynspread(tf.shade(agg, cmap=colormap, how='linear', span=range_params.colorbar_range), max_px=xlma_params.max_pixel_size, threshold=0.5)
 
     extent = (*range_params.x_range, *range_params.y_range)
-    ax3.imshow(X=img.to_pil(), extent=extent, origin='upper', zorder=3)
+    ax3.imshow(X=img.to_pil(), extent=extent, origin='upper', zorder=4)
 
     if strike_stitchings:
         segments = []
@@ -633,8 +640,14 @@ def create_strike_image(xlma_params: XLMAParams,
 
         # Create a LineCollection for efficiency with many segments.
         lc = LineCollection(segments, colors=marker_color, linewidths=xlma_params.stitching_line_thickness, alpha=xlma_params.stitching_alpha)
-        lc.set_zorder(2)  # Set desired z-order before adding
+        lc.set_zorder(3)  # Set desired z-order before adding
         ax3.add_collection(lc)
+
+    if xlma_params.cartopy_paths:
+        for path in xlma_params.cartopy_paths:
+            element = gpd.read_file(xlma_params.path)
+            element.boundary.plot(ax=ax3, edgecolor=marker_color, linewidth=1, zorder=2, alpha=0.2)
+
 
     ax3.set_xlabel(xlma_params.headers[xlma_params.x_unit])
     ax3.set_ylabel(xlma_params.headers[xlma_params.y_unit])
@@ -772,7 +785,7 @@ def create_strike_image(xlma_params: XLMAParams,
 
     buf = io.BytesIO()
     plt.savefig(buf, format='png', dpi=xlma_params.dpi)
-    plt.close() # Close buffer
+    plt.clf() # Clear figure
     buf.seek(0)
 
     # Open the image using Pillow

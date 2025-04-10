@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: lightning_parser_lib
-Version: 0.2.15
+Version: 0.2.21
 Summary: Connor's Lightning Parser Lib (LPL) is an extremely powerful analysis utility with a simplistic front-end in mind.
 Author-email: Connor White <connor.sw.personal@gmail.com>
 License-Expression: MIT
@@ -24,6 +24,7 @@ Requires-Dist: remote-events
 Requires-Dist: datashader
 Requires-Dist: matplotlib
 Requires-Dist: holoviews
+Requires-Dist: geopandas
 Dynamic: license-file
 
 # Connor's Lightning Parser Lib (LPL)

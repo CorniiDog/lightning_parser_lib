@@ -11,3 +11,4 @@ remote-events
 datashader
 matplotlib
 holoviews
+geopandas
