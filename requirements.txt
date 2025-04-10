@@ -12,3 +12,4 @@ datashader
 matplotlib
 holoviews
 geopandas
+Deprecation

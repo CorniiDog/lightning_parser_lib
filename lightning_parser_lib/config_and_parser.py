@@ -14,9 +14,12 @@ import numpy as np
 import pandas as pd
 from .number_crunchers import database_parser, lightning_bucketer, lightning_plotters, toolbox
 from .number_crunchers.toolbox import tprint
-from .number_crunchers.lightning_visualization import XLMAParams, create_strike_gif, export_strike_gif, create_strike_image, export_strike_image
+from .number_crunchers.lightning_visualization import XLMAParams, create_strike_gif, export_strike_gif, create_strike_image, export_strike_image, export_stats
 from typing import Tuple, List
 from remote_functions import RemoteFunctions
+from deprecation import deprecated
+import datetime
+import re
 
 rf = RemoteFunctions()
 
@@ -375,7 +378,8 @@ def export_general_stats(bucketed_strikes_indices: list[list[int]],
                          bucketed_lightning_correlations: list[list[int, int]],
                          events: pd.DataFrame,
                          config: LightningConfig,
-                         xlma_params: XLMAParams = XLMAParams()):
+                         xlma_params: XLMAParams = XLMAParams(),
+                         _include_deprecated:bool = False):
     """
     Exports various plots and statistics for the lightning strikes.
 
@@ -388,11 +392,15 @@ def export_general_stats(bucketed_strikes_indices: list[list[int]],
     if server_sided_config_override:
         config = server_sided_config_override
 
+    if os.path.exists(config.export_dir):
+        shutil.rmtree(config.export_dir)
     os.makedirs(config.export_dir, exist_ok=True)
 
-    tprint("Plotting strike points over time")
+    tprint("Plotting stats")
     export_path = os.path.join(config.export_dir, "strike_pts_over_time")
-    lightning_plotters.plot_strikes_over_time(bucketed_strikes_indices, events, output_filename=export_path + ".png")
+    export_stats(xlma_params=xlma_params, events=events, bucketed_indeces=bucketed_strikes_indices, export_path=export_path + ".tiff")
+    if _include_deprecated:
+        lightning_plotters.plot_strikes_over_time(bucketed_strikes_indices, events, output_filename=export_path + ".png")
 
     largest_strike = max(bucketed_strikes_indices, key=len)
     largest_stitch = max(bucketed_lightning_correlations, key=len)
@@ -406,27 +414,29 @@ def export_general_stats(bucketed_strikes_indices: list[list[int]],
     export_path = os.path.join(config.export_dir, "most_pts_xlma.gif")
     export_strike_gif(strike_gif, export_path)
 
-    tprint("Exporting largest instance")
-    export_path = os.path.join(config.export_dir, "most_pts")
-    lightning_plotters.plot_avg_power_map(largest_strike, events, output_filename=export_path + ".png", transparency_threshold=-1)
-    lightning_plotters.generate_strike_gif(largest_strike, events, output_filename=export_path + ".gif", transparency_threshold=-1)
 
-    tprint("Exporting largest stitched instance")
-    export_path = os.path.join(config.export_dir, "most_pts_stitched")
-    lightning_plotters.plot_lightning_stitch(largest_stitch, events, export_path + ".png")
-    lightning_plotters.plot_lightning_stitch_gif(largest_stitch, events, output_filename=export_path + ".gif")
+    if _include_deprecated:
+        tprint("Exporting largest instance")
+        export_path = os.path.join(config.export_dir, "most_pts")
+        lightning_plotters.plot_avg_power_map(largest_strike, events, output_filename=export_path + ".png", transparency_threshold=-1)
+        lightning_plotters.generate_strike_gif(largest_strike, events, output_filename=export_path + ".gif", transparency_threshold=-1)
 
-    tprint("Exporting all strike points")
-    export_path = os.path.join(config.export_dir, "all_pts")
-    combined_strikes = [idx for strike in bucketed_strikes_indices for idx in strike]
-    lightning_plotters.plot_avg_power_map(combined_strikes, events, output_filename=export_path + ".png", transparency_threshold=-1)
-    lightning_plotters.generate_strike_gif(combined_strikes, events, output_filename=export_path + ".gif", transparency_threshold=-1)
+        tprint("Exporting largest stitched instance")
+        export_path = os.path.join(config.export_dir, "most_pts_stitched")
+        lightning_plotters.plot_lightning_stitch(largest_stitch, events, export_path + ".png")
+        lightning_plotters.plot_lightning_stitch_gif(largest_stitch, events, output_filename=export_path + ".gif")
 
+        tprint("Exporting all strike points")
+        export_path = os.path.join(config.export_dir, "all_pts")
+        combined_strikes = [idx for strike in bucketed_strikes_indices for idx in strike]
+        lightning_plotters.plot_avg_power_map(combined_strikes, events, output_filename=export_path + ".png", transparency_threshold=-1)
+        lightning_plotters.generate_strike_gif(combined_strikes, events, output_filename=export_path + ".gif", transparency_threshold=-1)
 
-
-    tprint("Number of points within timeframe:", len(combined_strikes))
-
-def export_all_strikes(bucketed_strikes_indices: list[list[int]], events: pd.DataFrame, config: LightningConfig):
+def export_all_strikes(bucketed_strikes_indices: list[list[int]], 
+                       events: pd.DataFrame, 
+                       config: LightningConfig,
+                       xlma_params: XLMAParams = XLMAParams(),
+                       _include_deprecated:bool = False):
     """
     Exports heatmap plots for all lightning strikes.
 
@@ -442,14 +452,37 @@ def export_all_strikes(bucketed_strikes_indices: list[list[int]], events: pd.Dat
         shutil.rmtree(config.strike_dir)
     os.makedirs(config.strike_dir, exist_ok=True)
 
-    tprint("Plotting all strikes as a heatmap")
-    lightning_plotters.plot_all_strikes(bucketed_strikes_indices, events, config.strike_dir, config.num_cores,
-                                         sigma=1.5, transparency_threshold=-1)
-    lightning_plotters.plot_all_strikes(bucketed_strikes_indices, events, config.strike_dir, config.num_cores,
-                                         as_gif=True, sigma=1.5, transparency_threshold=-1)
-    tprint("Finished plotting strikes as a heatmap")
+    times = events['time_unix']
+    for strike_indeces in bucketed_strikes_indices:
+        start_time_unix = times[strike_indeces[0]]
+        start_time_dt = datetime.datetime.fromtimestamp(
+            start_time_unix, tz=datetime.timezone.utc
+        ).strftime("%Y-%m-%d %H:%M:%S UTC")
 
-def export_strike_stitchings(bucketed_lightning_correlations: list[list[int, int]], events: pd.DataFrame, config: LightningConfig):
+        safe_start_time = re.sub(r'[<>:"/\\|?*]', '_', str(start_time_dt))
+        tprint(f"Exporting basic non-stitched XLMA diagram for time {safe_start_time}")
+
+        file_out_path = os.path.join(config.strike_dir, safe_start_time) + ".tiff"
+
+        strike_image, _ = create_strike_image(xlma_params, events, strike_indeces, None)
+        export_path = os.path.join(config.export_dir, file_out_path)
+        export_strike_image(strike_image, export_path)
+
+            
+    if _include_deprecated:
+        tprint("Plotting all strikes as a heatmap")
+        lightning_plotters.plot_all_strikes(bucketed_strikes_indices, events, config.strike_dir, config.num_cores,
+                                            sigma=1.5, transparency_threshold=-1)
+        lightning_plotters.plot_all_strikes(bucketed_strikes_indices, events, config.strike_dir, config.num_cores,
+                                            as_gif=True, sigma=1.5, transparency_threshold=-1)
+        tprint("Finished plotting strikes as a heatmap")
+
+@deprecated(details="Plotly uses Kaleidoscope. Currently, Kaleidoscope engine has issues saving images. This function will continue to exist but will no longer be supported.")
+def export_strike_stitchings(bucketed_lightning_correlations: list[list[int, int]], 
+                             events: pd.DataFrame, 
+                             config: LightningConfig,
+                             xlma_params: XLMAParams = XLMAParams(),
+                             _include_deprecated:bool = False):
     """
     Exports plots and animations for stitched lightning strikes.
 
@@ -464,7 +497,32 @@ def export_strike_stitchings(bucketed_lightning_correlations: list[list[int, int
     tprint("Plotting all strike stitchings")
     if os.path.exists(config.strike_stitchings_dir):
         shutil.rmtree(config.strike_stitchings_dir)
-    lightning_plotters.plot_all_strike_stitchings(bucketed_lightning_correlations, events, config.strike_stitchings_dir, config.num_cores)
-    lightning_plotters.plot_all_strike_stitchings(bucketed_lightning_correlations, events, config.strike_stitchings_dir, config.num_cores,
+    os.makedirs(config.strike_stitchings_dir, exist_ok=True)
+
+    times = events['time_unix']
+    for strike_stitchings in bucketed_lightning_correlations:
+        start_time_unix = times[strike_stitchings[0][0]]
+        start_time_dt = datetime.datetime.fromtimestamp(
+            start_time_unix, tz=datetime.timezone.utc
+        ).strftime("%Y-%m-%d %H:%M:%S UTC")
+
+        strike_indices = set()
+        for (parent_idx, child_idx) in strike_stitchings:
+            strike_indices.add(parent_idx)
+            strike_indices.add(child_idx)
+        strike_indices = list(strike_indices)
+
+        safe_start_time = re.sub(r'[<>:"/\\|?*]', '_', str(start_time_dt))
+        tprint(f"Exporting basic non-stitched XLMA diagram for time {safe_start_time}")
+
+        file_out_path = os.path.join(config.strike_dir, safe_start_time) + ".tiff"
+
+        strike_image, _ = create_strike_image(xlma_params, events, strike_indices, strike_stitchings)
+        export_path = os.path.join(config.export_dir, file_out_path)
+        export_strike_image(strike_image, export_path)
+
+    if _include_deprecated:
+        lightning_plotters.plot_all_strike_stitchings(bucketed_lightning_correlations, events, config.strike_stitchings_dir, config.num_cores)
+        lightning_plotters.plot_all_strike_stitchings(bucketed_lightning_correlations, events, config.strike_stitchings_dir, config.num_cores,
                                                    as_gif=True)
     tprint("Finished outputting stitchings")

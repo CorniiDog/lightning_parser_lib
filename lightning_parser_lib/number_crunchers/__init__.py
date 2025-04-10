@@ -40,6 +40,10 @@ from .toolbox import (
     is_cached,
     cpu_pct_to_cores,
     is_mostly_text,
+    find_county_file,
+    find_shp,
+    unzip_file,
+    append_county
 )
 
 from .lightning_visualization import (
@@ -55,6 +59,7 @@ from .lightning_visualization import (
     create_strike_gif,
     export_strike_image,
     export_strike_gif,
+    export_stats
 )
 
 __all__ = [
@@ -99,6 +104,10 @@ __all__ = [
     "is_cached",
     "cpu_pct_to_cores",
     "is_mostly_text",
+    "find_county_file",
+    "find_shp",
+    "unzip_file",
+    "append_county",
     # lightning_visualization
     "main",
     "colormap_to_hex",
@@ -112,4 +121,5 @@ __all__ = [
     "create_strike_gif",
     "export_strike_image",
     "export_strike_gif",
+    "export_stats"
 ]

@@ -498,6 +498,8 @@ def create_strike_image(xlma_params: XLMAParams,
         
     if xlma_params.dark_theme:
         plt.style.use('dark_background')  # Apply dark mode
+    else:
+        plt.style.use(style='default')
 
     plt.rcParams.update({'font.size': xlma_params.font_size})
 
@@ -826,8 +828,8 @@ def create_strike_image(xlma_params: XLMAParams,
     fig.text(0.55, 0.9, description, ha="center", fontsize=9)
 
     buf = io.BytesIO()
-    plt.savefig(buf, format='png', dpi=xlma_params.dpi)
-    plt.clf() # Clear figure
+    fig.savefig(buf, format='png', dpi=xlma_params.dpi)
+    plt.close(fig)
     buf.seek(0)
 
     # Open the image using Pillow
@@ -954,6 +956,96 @@ def export_strike_gif(gif_buffer: io.BytesIO, export_path: str):
     """
     with open(export_path, "wb") as f:
         f.write(gif_buffer.getvalue())
+
+import datetime
+import matplotlib.pyplot as plt
+import pandas as pd
+from typing import List
+# Assuming XLMAParams is already defined and imported
+
+def export_stats(xlma_params: XLMAParams, events: pd.DataFrame, bucketed_indeces: List[List[int]], export_path: str):
+    """
+    Exports a statistics plot to an image file.
+
+    The plot displays event time (UTC) on the x-axis and the number of points per bucket on the y-axis.
+    Each non-empty bucket is represented by one point located at the mean time of its events.
+
+    Parameters:
+        xlma_params (XLMAParams): Configuration parameters; expects xlma_params.time_unit for the time column name,
+                                  xlma_params.time_as_datetime flag, and optionally xlma_params.dpi for resolution.
+        events (pd.DataFrame): DataFrame containing lightning event data.
+        bucketed_indeces (List[List[int]]): List of buckets, where each bucket is a list of event indices.
+        export_path (str): The file path where the generated image will be saved.
+    """
+    if xlma_params.dark_theme:
+        plt.style.use('dark_background')  # Apply dark mode
+    else:
+        plt.style.use(style='default')
+
+    # Convert the time column to UTC datetime format if necessary.
+
+    times = pd.to_datetime(events[xlma_params.time_unit], unit='s', utc=True)
+
+    agg_times = []
+    num_pts = []
+
+    # Iterate over each bucket, computing the representative (mean) time and the number of events.
+    for bucket in bucketed_indeces:
+        if not bucket:  # Skip empty buckets
+            continue
+        bucket_times = times.iloc[bucket]
+        rep_time = bucket_times.mean()
+        agg_times.append(rep_time)
+        num_pts.append(len(bucket))
+
+    # Choose the line color based on the theme.
+    marker_color = 'black'
+    if xlma_params.dark_theme:
+        marker_color = 'white'
+
+    # Specify the color for markers (dots)
+    dot_color = 'red'
+
+    # Use parameters for point size and line thickness.
+    # Multiply point size by a factor to ensure visibility.
+    point_size = xlma_params.altitude_graph_max_pixel_size
+    line_thickness = xlma_params.altitude_graph_line_thickness
+
+    # Create the plot.
+    fig, ax = plt.subplots()
+    ax.plot(
+        agg_times, num_pts,
+        marker='o', linestyle='-',
+        color=marker_color,
+        markersize=point_size,
+        linewidth=line_thickness,
+        markerfacecolor=dot_color
+    )
+
+    ax.xaxis.set_major_formatter(FuncFormatter(custom_time_formatter))
+
+    ax.yaxis.set_major_formatter(FuncFormatter(conditional_formatter_factory(min(num_pts), max(num_pts))))
+
+    ax.set_xlabel("Time (UTC)")
+    ax.set_ylabel("Number of Points")
+
+    start_time_unit = events.iloc[0][xlma_params.time_unit]
+    start_time = datetime.datetime.fromtimestamp(timestamp=start_time_unit, tz=datetime.timezone.utc)
+    start_time_str = start_time.strftime("%d %b %Y")
+
+    end_time_unit = events.iloc[0][xlma_params.time_unit]
+    end_time = datetime.datetime.fromtimestamp(timestamp=end_time_unit, tz=datetime.timezone.utc)
+    end_time_str = end_time.strftime("%d %b %Y")
+
+    ax.set_title(f"N Points Over Time: {start_time_str} - {end_time_str}")
+
+    # Automatically format the x-axis for better datetime display.
+    fig.autofmt_xdate()
+
+    # Export the plot to an image file with the specified DPI.
+    dpi_value = xlma_params.dpi if hasattr(xlma_params, 'dpi') else 300
+    fig.savefig(export_path, dpi=dpi_value)
+    plt.close(fig)
 
 
 # Run example code

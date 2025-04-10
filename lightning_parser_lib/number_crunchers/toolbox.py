@@ -4,6 +4,8 @@ import hashlib
 from typing import List, Mapping, Any
 import datetime
 import string
+import zipfile
+import re
 
 def tprint(*args: Any, **kwargs: Any) -> None:
     """
@@ -323,3 +325,124 @@ def is_mostly_text(file_path: str, threshold=0.95) -> bool:
     ratio = text_like / len(data)
 
     return ratio >= threshold
+
+def find_county_file(directory_to_search: str | None = None, is_dir: bool = False):
+    """
+    Searches for a county file or directory matching a specific pattern within a given directory.
+
+    The function looks for an item that matches the pattern "tl_####_us_county" where "####" represents
+    a four-digit year. If `is_dir` is False, it searches for a file ending with ".zip" (e.g., "tl_2018_us_county.zip");
+    if `is_dir` is True, it searches for a directory whose name exactly matches the pattern
+    (e.g., "tl_2018_us_county").
+
+    Parameters:
+        directory_to_search (str | None): The directory path to search. Defaults to the current directory if None.
+        is_dir (bool): If True, searches for a directory; if False (default), searches for a file ending in ".zip".
+
+    Returns:
+        Optional[str]: The full path of the first matching county file or directory found, or None if no match exists.
+
+    Example:
+        >>> find_county_file(".", False)
+        './tl_2018_us_county.zip'
+    """
+    if directory_to_search == None:
+        directory_to_search = "."
+    pattern = re.compile(r"tl_\d{4}_us_county" + (r"\.zip" if not is_dir else r"$"))
+
+    for name in os.listdir(directory_to_search):
+        full_path = os.path.join(directory_to_search, name)
+
+        if is_dir and os.path.isdir(full_path) and pattern.fullmatch(name):
+            return full_path
+        elif not is_dir and os.path.isfile(full_path) and pattern.fullmatch(name):
+            return full_path
+
+    return None
+
+def find_shp(directory_to_search: str):
+    """
+    Recursively searches for a shapefile (*.shp) in the specified directory.
+
+    The function walks the directory tree starting from `directory_to_search` and returns the full
+    path of the first file encountered with a ".shp" extension (case insensitive).
+
+    Parameters:
+        directory_to_search (str): The root directory to begin the search.
+
+    Returns:
+        Optional[str]: The full path to the found shapefile, or None if no shapefile is found.
+
+    Example:
+        >>> find_shp("/path/to/data")
+        '/path/to/data/county/somefile.shp'
+    """
+    for root, _, files in os.walk(directory_to_search):
+        for name in files:
+            if name.lower().endswith(".shp"):
+                return os.path.join(root, name)
+    return None
+
+
+def unzip_file(zip_path: str):
+    """
+    Extracts a zip file to a directory with the same base name as the zip file.
+
+    Validates that the provided path refers to a valid zip file and then extracts its contents
+    to a new directory named after the zip file (with the ".zip" extension removed).
+
+    Parameters:
+        zip_path (str): The full path of the zip file to be extracted.
+
+    Returns:
+        str: The path to the directory where the files were extracted.
+
+    Raises:
+        ValueError: If the provided file is not a valid zip archive.
+
+    Example:
+        >>> unzip_file("data_archive.zip")
+        'data_archive'
+    """
+    if not zipfile.is_zipfile(zip_path):
+        raise ValueError(f"Not a valid zip file: {zip_path}")
+    
+    extract_dir = os.path.splitext(zip_path)[0]  # Remove .zip extension
+    
+    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+        zip_ref.extractall(extract_dir)
+    
+    return extract_dir
+
+def append_county(cartopy_paths: List[str]):
+    """
+    Attempts to locate a county shapefile and append its path to a list of cartopy shapefile paths.
+
+    The function first tries to find a county directory (by searching for a pattern matching "tl_####_us_county").
+    If such a directory is found, it searches within for a shapefile (*.shp) and, if found, appends its full path
+    to the provided `cartopy_paths` list. If no directory is found, it then looks for a zip file matching the county
+    pattern, unzips it, and then recurses to try to locate the shapefile again.
+
+    Parameters:
+        cartopy_paths (List[str]): A list of existing cartopy shapefile paths that may be updated with the county shapefile.
+
+    Returns:
+        List[str]: The updated list of cartopy shapefile paths, potentially including the county shapefile path.
+
+    Example:
+        >>> paths = []
+        >>> append_county(paths)
+        ['/path/to/county_shapefile.shp']
+    """
+    county_dir = find_county_file(is_dir=True)
+    if county_dir:
+        county_shp = find_shp(county_dir)
+        if county_shp:
+            cartopy_paths.append(county_shp)
+    else:
+        county_dir_zip = find_county_file(is_dir=False)
+        if county_dir_zip:
+            unzip_file(county_dir_zip)
+            return append_county() # Try again
+    return cartopy_paths
+        

@@ -18,6 +18,7 @@ from plotly.colors import sample_colorscale
 from plotly.subplots import make_subplots
 from .toolbox import tprint
 from . import toolbox
+from deprecation import deprecated
 
 global_shutdown_event = None
 
@@ -25,6 +26,7 @@ def init_worker(shutdown_ev):
     global global_shutdown_event
     global_shutdown_event = shutdown_ev
 
+@deprecated(details="Plotly uses Kaleidoscope. Currently, Kaleidoscope engine has issues saving images. This function will continue to exist but will no longer be supported.")
 def plot_strikes_over_time(
     bucketed_strikes_indices_sorted: list[list[int]],
     events: pd.DataFrame,
@@ -94,7 +96,7 @@ def plot_strikes_over_time(
 
     return fig
 
-
+@deprecated(details="Plotly uses Kaleidoscope. Currently, Kaleidoscope engine has issues saving images. This function will continue to exist but will no longer be supported.")
 def plot_avg_power_map(
     strike_indices: list[int],
     events: pd.DataFrame,
@@ -223,6 +225,7 @@ def plot_avg_power_map(
 
     return fig, np.nanmax(blurred_stat)
 
+@deprecated(details="Plotly uses Kaleidoscope. Currently, Kaleidoscope engine has issues saving images. This function will continue to exist but will no longer be supported.")
 def generate_strike_gif(
     strike_indices: list[int],
     events: pd.DataFrame,
@@ -376,7 +379,7 @@ def _plot_strike(args):
         output_filename = os.path.join(strike_dir, f"{safe_start_time}.gif")
         generate_strike_gif(strike_indices, events, output_filename=output_filename, sigma=sigma, transparency_threshold=transparency_threshold)
 
-
+@deprecated(details="Plotly uses Kaleidoscope. Currently, Kaleidoscope engine has issues saving images. This function will continue to exist but will no longer be supported.")
 def plot_all_strikes(
     bucketed_strike_indices, events, strike_dir="strikes", num_cores=1, as_gif=False, sigma=1.0, transparency_threshold=0.01
 ):
@@ -420,7 +423,7 @@ def plot_all_strikes(
     except KeyboardInterrupt:
         shutdown_event.set()
 
-
+@deprecated(details="Plotly uses Kaleidoscope. Currently, Kaleidoscope engine has issues saving images. This function will continue to exist but will no longer be supported.")
 def plot_lightning_stitch(
     lightning_correlations: list[Tuple[int, int]], 
     events: pd.DataFrame,
@@ -619,7 +622,7 @@ def plot_lightning_stitch(
 
 
 
-
+@deprecated(details="Plotly uses Kaleidoscope. Currently, Kaleidoscope engine has issues saving images. This function will continue to exist but will no longer be supported.")
 def plot_lightning_stitch_gif(
     lightning_correlations: list[Tuple[int, int]], 
     events: pd.DataFrame,
@@ -754,7 +757,7 @@ def _plot_strike_stitchings(args):
             output_filename=output_filename
         )
 
-
+@deprecated(details="Plotly uses Kaleidoscope. Currently, Kaleidoscope engine has issues saving images. This function will continue to exist but will no longer be supported.")
 def plot_all_strike_stitchings(
     bucketed_lightning_correlations: list[list[Tuple[int, int]]],
     events: pd.DataFrame,
