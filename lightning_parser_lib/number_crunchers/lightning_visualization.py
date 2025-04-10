@@ -554,7 +554,7 @@ def create_strike_image(xlma_params: XLMAParams,
         xlma_params.alt_group_unit: [],
         xlma_params.num_pts_unit: []
     }
-    alt_dict[xlma_params.color_unit] = []
+    alt_dict[color_unit_specific] = []
 
     for altitude_group, num_pts in sorted(altitudes.items()):
         alt_dict[xlma_params.alt_group_unit].append(altitude_group)
@@ -837,7 +837,7 @@ def create_strike_gif(
         # If strike_stitchings is provided, filter for those with both endpoints within the current cutoff.
         if strike_stitchings is not None:
             partial_stitchings = [
-                (i1, i2) for (i1, i2) in strike_stitchings if i1 in strike_indeces and i2 in strike_indeces
+                (i1, i2) for (i1, i2) in strike_stitchings if i1 in partial_indices and i2 in partial_indices
             ]
         else:
             partial_stitchings = None
