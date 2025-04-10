@@ -13,10 +13,10 @@ All of these methods allow extremely fast computation times, given the immense s
 
 ![most_pts_stitched](https://github.com/CorniiDog/lightning_research_application/raw/main/.img/most_pts_stitched.gif)
 
-![most_pts_xlma](https://github.com/CorniiDog/lightning_parser_lib/blob/main/.img/most_pts_xlma.gif?raw=true)
-
 >[!NOTE]
 > The gray, un-stitched dots in the figure are points that do not meet the criteria to be a part of the lightning strike, as determined by stitching parameters. By comparing stitched vs. non-stitched points in the visualization, you can verify the validity of the strike stitching algorithm
+
+![most_pts_xlma](https://github.com/CorniiDog/lightning_parser_lib/blob/main/.img/most_pts_xlma.gif?raw=true)
 
 This library extracts LYLOUT data, store it into a lightning database, and processes millions of datapoints in the database to a reasonably fast and optimized speed. This project is meant to be a framework for applications to implement and parse data more appropriately.
 
