@@ -188,6 +188,19 @@ def _cache_and_parse(config: LightningConfig):
     tprint("Headers:", database_parser.get_headers(config.db_path))
 
 @rf.as_remote()
+def cache_and_parse(config: LightningConfig):
+    """
+    Retrieves LYLOUT files from the specified directory and caches the data into an SQLite database.
+    Exits if no data files are found.
+    
+    Args:
+        config: An instance of LightningConfig containing configuration settings.
+    """
+    if server_sided_config_override:
+        config = server_sided_config_override
+    return _cache_and_parse(config)
+
+@rf.as_remote()
 def get_headers(config: LightningConfig) -> List[str]:
     """
     Returns a list of headers from the database
