@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: lightning_parser_lib
-Version: 0.2.43
+Version: 0.2.44
 Summary: Connor's Lightning Parser Lib (LPL) is an extremely powerful analysis utility with a simplistic front-end in mind.
 Author-email: Connor White <connor.sw.personal@gmail.com>
 License-Expression: MIT
@@ -38,13 +38,6 @@ The analyzer is capable of processing millions of LYLOUT datapoints in mere minu
 >The stitchings are done on a temporal and delta-magnitude basis. This basically means that scipy's cKDTree, despite being powerful and timely, does not include temporal thresholds and therefore would not accurately stitch lightning points that respect the lightning strike. Therefore, this code will go from 4 minutes with 3 million points to 2 hours for 10 million points. I will likely switch to C or C++ down the line to improve processing time. But for now, this is the most optimized Python library I can make for temporal distance lightning stitching.
 
 All of these methods allow extremely fast computation times, given the immense scale and size of the data itself.
-
-![most_pts](https://github.com/CorniiDog/lightning_parser_lib/raw/main/.img/most_pts.gif)
-
-![most_pts_stitched](https://github.com/CorniiDog/lightning_parser_lib/raw/main/.img/most_pts_stitched.gif)
-
->[!NOTE]
-> The gray, un-stitched dots in the figure are points that do not meet the criteria to be a part of the lightning strike, as determined by stitching parameters. By comparing stitched vs. non-stitched points in the visualization, you can verify the validity of the strike stitching algorithm
 
 ![most_pts_xlma](https://github.com/CorniiDog/lightning_parser_lib/raw/main/.img/most_pts_xlma.gif)
 
