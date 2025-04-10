@@ -26,7 +26,7 @@ print("Starting up. Importing...")
 import lightning_parser_lib.config_and_parser as config_and_parser
 from lightning_parser_lib.number_crunchers.toolbox import tprint
 import lightning_parser_lib.number_crunchers.toolbox as toolbox
-
+from lightning_parser_lib.number_crunchers.lightning_visualization import XLMAParams
 import time
 import datetime
 import pandas as pd
@@ -152,8 +152,21 @@ def main():
     if EXPORT_AS_CSV:
         config_and_parser.export_as_csv(bucketed_strikes_indices, events, config=lightning_configuration) 
 
+
     if EXPORT_GENERAL_STATS:
-        config_and_parser.export_general_stats(bucketed_strikes_indices, bucketed_lightning_correlations, events, config=lightning_configuration)
+        xlma_params = XLMAParams(
+            dark_theme=True,
+            color_unit='power_db',
+            
+            # # (Optional)
+            # # Download the .zip file from the link for counties (the .zip includes boundary lines + names), 
+            # # put in project, and unzip https://www2.census.gov/geo/tiger/TIGER2024/COUNTY/
+            # # Then add the path to the .shp below:
+            # cartopy_paths=[
+            #     'tl_2024_us_county/tl_2024_us_county.shp',
+            # ]
+        )
+        config_and_parser.export_general_stats(bucketed_strikes_indices, bucketed_lightning_correlations, events, config=lightning_configuration, xlma_params=xlma_params)
 
     if EXPORT_ALL_STRIKES:
         config_and_parser.export_all_strikes(bucketed_strikes_indices, events, config=lightning_configuration)
