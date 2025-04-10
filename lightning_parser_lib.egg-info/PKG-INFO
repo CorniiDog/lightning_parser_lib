@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: lightning_parser_lib
-Version: 0.2.40
+Version: 0.2.41
 Summary: Connor's Lightning Parser Lib (LPL) is an extremely powerful analysis utility with a simplistic front-end in mind.
 Author-email: Connor White <connor.sw.personal@gmail.com>
 License-Expression: MIT
@@ -372,6 +372,7 @@ import pandas as pd
 import datetime
 from lightning_parser_lib.number_crunchers.toolbox import tprint
 from lightning_parser_lib.number_crunchers.lightning_visualization import XLMAParams
+import lightning_parser_lib.number_crunchers.toolbox as toolbox
 
 def main():
     config_and_parser.rf.set_password("Whoop!-")
@@ -440,7 +441,7 @@ def main():
         color_unit='power_db',
         cartopy_paths= toolbox.append_county([])
     )
-    
+
     config_and_parser.export_general_stats(bucketed_strikes_indices, bucketed_lightning_correlations, events, config=lightning_configuration, xlma_params=xlma_params)
     print(first_lightning_strike)
 
