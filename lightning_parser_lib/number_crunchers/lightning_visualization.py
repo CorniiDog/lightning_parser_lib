@@ -53,7 +53,11 @@ import io
 import imageio
 import geopandas as gpd
 from shapely.geometry import box
-
+import tqdm
+import re
+import os
+import multiprocessing
+from . import toolbox
 
 def main():
     """
@@ -1047,6 +1051,65 @@ def export_stats(xlma_params: XLMAParams, events: pd.DataFrame, bucketed_indeces
     fig.savefig(export_path, dpi=dpi_value)
     plt.close(fig)
 
+global_shutdown_event = None
+def init_worker(shutdown_ev):
+    global global_shutdown_event
+    global_shutdown_event = shutdown_ev
+
+def _export_bulk_to_folder(args):
+    events, times, output_dir, xlma_params, bucketed_strike_indices, bucketed_strike_correlations = args
+
+    for i, strike_indeces in enumerate(bucketed_strike_indices):
+        if global_shutdown_event and global_shutdown_event.is_set():
+            break
+
+        start_time_unix = times[strike_indeces[0]]
+        start_time_dt = datetime.datetime.fromtimestamp(
+            start_time_unix, tz=datetime.timezone.utc
+        ).strftime("%Y-%m-%d %H:%M:%S UTC")
+
+        safe_start_time = re.sub(r'[<>:"/\\|?*]', '_', str(start_time_dt))
+
+        file_out_path = os.path.join(output_dir, safe_start_time) + ".tiff"
+
+        if bucketed_strike_correlations:
+            strike_correlations = bucketed_strike_correlations[i]
+        else:
+            strike_correlations = None
+
+        strike_image, _ = create_strike_image(xlma_params=xlma_params, events=events, strike_indeces=strike_indeces, strike_stitchings=strike_correlations)
+        export_strike_image(strike_image, file_out_path)
+
+def export_bulk_to_folder(events: pd.DataFrame, output_dir: str, bucketed_strike_indices: List[List[int]], bucketed_strike_correlations: List[Tuple[int, int]], num_cores:int = 1, num_workers: int = 40, xlma_params:XLMAParams = XLMAParams()):
+    times = events['time_unix']
+    shutdown_event = multiprocessing.Event()
+
+    bucketed_bucketed_strike_indices = toolbox.split_into_groups(bucketed_strike_indices, num_workers)
+
+    if bucketed_strike_correlations:
+        bucketed_bucketed_strike_correlations = toolbox.split_into_groups(bucketed_strike_correlations, num_workers)
+    else:
+        bucketed_bucketed_strike_correlations = [None] * len(bucketed_bucketed_strike_indices)
+
+    lightning_groups = []
+    for i, sub_bucketed_strike_indices in enumerate(bucketed_bucketed_strike_indices):
+        lightning_groups.append((sub_bucketed_strike_indices, bucketed_bucketed_strike_correlations[i]))
+        
+    args_list = [
+        (events, times, output_dir, xlma_params, bucketed_strike_i, bucketed_strike_corr)
+        for (bucketed_strike_i, bucketed_strike_corr) in lightning_groups
+    ]
+
+    try:
+        if num_cores > 1:
+            with multiprocessing.Pool(processes=num_cores, initializer=init_worker, initargs=(shutdown_event,)) as pool:
+                for _ in tqdm(pool.imap(_export_bulk_to_folder, args_list), total=len(args_list), desc="Exporting Strike"):
+                    pass
+        else: #Only use one core, in-line
+            for args in tqdm(args_list, desc="Exporting Strike"):
+                _export_bulk_to_folder(args)
+    except KeyboardInterrupt:
+        shutdown_event.set()
 
 # Run example code
 if __name__ == '__main__':

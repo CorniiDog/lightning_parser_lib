@@ -43,7 +43,8 @@ from .toolbox import (
     find_county_file,
     find_shp,
     unzip_file,
-    append_county
+    append_county,
+    split_into_groups
 )
 
 from .lightning_visualization import (
@@ -59,7 +60,8 @@ from .lightning_visualization import (
     create_strike_gif,
     export_strike_image,
     export_strike_gif,
-    export_stats
+    export_stats,
+    export_bulk_to_folder
 )
 
 __all__ = [
@@ -108,6 +110,7 @@ __all__ = [
     "find_shp",
     "unzip_file",
     "append_county",
+    "split_into_groups",
     # lightning_visualization
     "main",
     "colormap_to_hex",
@@ -121,5 +124,6 @@ __all__ = [
     "create_strike_gif",
     "export_strike_image",
     "export_strike_gif",
-    "export_stats"
+    "export_stats",
+    "export_bulk_to_folder"
 ]

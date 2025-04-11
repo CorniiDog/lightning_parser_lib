@@ -446,3 +446,34 @@ def append_county(cartopy_paths: List[str]):
             return append_county() # Try again
     return cartopy_paths
         
+def split_into_groups(x: List[Any], num_workers: int):
+    """
+    Splits a list into nearly equal sublists, up to num_workers groups.
+
+    This function partitions the input list x into a list of sublists where each sublist contains
+    a nearly equal number of elements. The number of groups created is the minimum of num_workers
+    and the length of x. The list is divided such that each group gets an average size, with any
+    remainder elements distributed to the first groups to ensure the sizes differ by at most one.
+
+    Parameters:
+      x (List[Any]): The list of elements to be partitioned.
+      num_workers (int): The maximum number of groups to split the list into.
+
+    Returns:
+      List[List[Any]]: A list containing the sublists of x split into nearly equal groups.
+
+    Example:
+      >>> x = list(range(1, 21))
+      >>> split_into_groups(x, 3)
+      [[1, 2, 3, 4, 5, 6, 7], [8, 9, 10, 11, 12, 13, 14], [15, 16, 17, 18, 19, 20]]
+    """
+    n_groups = min(num_workers, len(x))
+    avg = len(x) // n_groups
+    remainder = len(x) % n_groups
+    groups = []
+    start = 0
+    for i in range(n_groups):
+        size = avg + (1 if i < remainder else 0)
+        groups.append(x[start:start+size])
+        start += size
+    return groups

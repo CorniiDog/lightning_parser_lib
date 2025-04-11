@@ -14,7 +14,8 @@ import numpy as np
 import pandas as pd
 from .number_crunchers import database_parser, lightning_bucketer, lightning_plotters, toolbox
 from .number_crunchers.toolbox import tprint
-from .number_crunchers.lightning_visualization import XLMAParams, create_strike_gif, export_strike_gif, create_strike_image, export_strike_image, export_stats
+from .number_crunchers.lightning_visualization import XLMAParams,\
+    create_strike_gif, export_strike_gif, create_strike_image, export_strike_image, export_stats, export_bulk_to_folder
 from typing import Tuple, List
 from remote_functions import RemoteFunctions
 from deprecation import deprecated
@@ -453,20 +454,8 @@ def export_all_strikes(bucketed_strikes_indices: list[list[int]],
         shutil.rmtree(config.strike_dir)
     os.makedirs(config.strike_dir, exist_ok=True)
 
-    times = events['time_unix']
-    for strike_indeces in tqdm(bucketed_strikes_indices, desc="Processing strike indeces"):
-        start_time_unix = times[strike_indeces[0]]
-        start_time_dt = datetime.datetime.fromtimestamp(
-            start_time_unix, tz=datetime.timezone.utc
-        ).strftime("%Y-%m-%d %H:%M:%S UTC")
 
-        safe_start_time = re.sub(r'[<>:"/\\|?*]', '_', str(start_time_dt))
-        tprint(f"Exporting basic non-stitched XLMA diagram for time {safe_start_time}")
-
-        file_out_path = os.path.join(config.strike_dir, safe_start_time) + ".tiff"
-
-        strike_image, _ = create_strike_image(xlma_params, events, strike_indeces, None)
-        export_strike_image(strike_image, file_out_path)
+    export_bulk_to_folder(events=events, output_dir=config.strike_dir, bucketed_strike_indices=bucketed_strikes_indices, bucketed_strike_correlations=None, xlma_params=xlma_params)
 
             
     if _include_deprecated:
@@ -499,26 +488,16 @@ def export_strike_stitchings(bucketed_lightning_correlations: list[list[int, int
         shutil.rmtree(config.strike_stitchings_dir)
     os.makedirs(config.strike_stitchings_dir, exist_ok=True)
 
-    times = events['time_unix']
-    for strike_stitchings in tqdm(bucketed_lightning_correlations, desc="Processing strike stitchings"):
-        start_time_unix = times[strike_stitchings[0][0]]
-        start_time_dt = datetime.datetime.fromtimestamp(
-            start_time_unix, tz=datetime.timezone.utc
-        ).strftime("%Y-%m-%d %H:%M:%S UTC")
-
+    bucketed_strikes_indices = []
+    for strike_stitchings in bucketed_lightning_correlations:
         strike_indices = set()
         for (parent_idx, child_idx) in strike_stitchings:
             strike_indices.add(parent_idx)
             strike_indices.add(child_idx)
-        strike_indices = list(strike_indices)
+        bucketed_strikes_indices.append(list(strike_indices))
 
-        safe_start_time = re.sub(r'[<>:"/\\|?*]', '_', str(start_time_dt))
-        tprint(f"Exporting basic stitched XLMA diagram for time {safe_start_time}")
+    export_bulk_to_folder(events=events, output_dir=config.strike_stitchings_dir, bucketed_strike_indices=bucketed_strikes_indices, bucketed_strike_correlations=bucketed_lightning_correlations, xlma_params=xlma_params)
 
-        file_out_path = os.path.join(config.strike_dir, safe_start_time) + ".tiff"
-
-        strike_image, _ = create_strike_image(xlma_params, events, strike_indices, strike_stitchings)
-        export_strike_image(strike_image, file_out_path)
 
     if _include_deprecated:
         lightning_plotters.plot_all_strike_stitchings(bucketed_lightning_correlations, events, config.strike_stitchings_dir, config.num_cores)
