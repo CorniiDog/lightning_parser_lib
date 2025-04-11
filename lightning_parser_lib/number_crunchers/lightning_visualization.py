@@ -1094,7 +1094,7 @@ def _export_bulk_to_folder(args):
         strike_image, _ = create_strike_image(xlma_params=xlma_params, events=events, strike_indeces=strike_indeces, strike_stitchings=strike_correlations)
         export_strike_image(strike_image, file_out_path)
 
-def export_bulk_to_folder(events: pd.DataFrame, output_dir: str, bucketed_strike_indices: List[List[int]], bucketed_strike_correlations: List[Tuple[int, int]], num_cores:int = 1, num_workers: int = 25, xlma_params:XLMAParams = XLMAParams()):
+def export_bulk_to_folder(events: pd.DataFrame, output_dir: str, bucketed_strike_indices: List[List[int]], bucketed_strike_correlations: List[Tuple[int, int]] = None, num_cores:int = 1, num_workers: int = 25, xlma_params:XLMAParams = XLMAParams()):
     times = events['time_unix']
     shutdown_event = multiprocessing.Event()
 
@@ -1103,7 +1103,7 @@ def export_bulk_to_folder(events: pd.DataFrame, output_dir: str, bucketed_strike
     if bucketed_strike_correlations:
         bucketed_bucketed_strike_correlations = toolbox.split_into_groups(bucketed_strike_correlations, num_workers)
     else:
-        bucketed_bucketed_strike_correlations = toolbox.split_into_groups([None] * len(bucketed_bucketed_strike_indices), num_workers)
+        bucketed_bucketed_strike_correlations = [None] * len(bucketed_bucketed_strike_indices)
 
     lightning_groups = []
     for i, sub_bucketed_strike_indices in enumerate(bucketed_bucketed_strike_indices):
