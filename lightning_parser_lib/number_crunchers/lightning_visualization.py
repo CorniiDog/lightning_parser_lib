@@ -909,7 +909,7 @@ def create_strike_gif(
     frames = []
     total_events = len(strike_indeces)
 
-    for frame in range(1, num_frames + 1):
+    for frame in tqdm(range(1, num_frames + 1), desc="Generating Gif"):
         # Determine the cutoff index for the current frame.
         cutoff = max(1, int(round(total_events * frame / num_frames)))
         # Select the subset of event indices.
