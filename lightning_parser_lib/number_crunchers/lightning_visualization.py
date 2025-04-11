@@ -955,7 +955,7 @@ def create_strike_gif(
     try:
         if num_cores > 1:
             with multiprocessing.Pool(processes=num_cores, initializer=init_worker, initargs=(shutdown_event,)) as pool:
-                for result in tqdm(pool.imap(_create_strike_gif_utility, args_list_bucketed), total=len(args_list_bucketed), desc="Exporting Strikes"):
+                for result in tqdm(pool.imap(_create_strike_gif_utility, args_list_bucketed), total=len(args_list_bucketed), desc="Generating GIF"):
                     frames += result
         else: #Only use one core, in-line
             for args_list in tqdm(args_list_bucketed, desc="Generating GIF"):
@@ -1087,7 +1087,7 @@ def export_stats(xlma_params: XLMAParams, events: pd.DataFrame, bucketed_indeces
     start_time = datetime.datetime.fromtimestamp(timestamp=start_time_unit, tz=datetime.timezone.utc)
     start_time_str = start_time.strftime("%d %b %Y")
 
-    ax.set_title(f"Points Over Time: {start_time_str}")
+    ax.set_title(f"Points Over Time\n{start_time_str}")
 
     # Automatically format the x-axis for better datetime display.
     fig.autofmt_xdate()
