@@ -1037,11 +1037,7 @@ def export_stats(xlma_params: XLMAParams, events: pd.DataFrame, bucketed_indeces
     start_time = datetime.datetime.fromtimestamp(timestamp=start_time_unit, tz=datetime.timezone.utc)
     start_time_str = start_time.strftime("%d %b %Y")
 
-    end_time_unit = events.iloc[0][xlma_params.time_unit]
-    end_time = datetime.datetime.fromtimestamp(timestamp=end_time_unit, tz=datetime.timezone.utc)
-    end_time_str = end_time.strftime("%d %b %Y")
-
-    ax.set_title(f"N Points Over Time: {start_time_str} - {end_time_str}")
+    ax.set_title(f"Points Over Time: {start_time_str}")
 
     # Automatically format the x-axis for better datetime display.
     fig.autofmt_xdate()
