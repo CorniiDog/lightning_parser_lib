@@ -53,7 +53,7 @@ import io
 import imageio
 import geopandas as gpd
 from shapely.geometry import box
-import tqdm
+from tqdm import tqdm
 import re
 import os
 import multiprocessing

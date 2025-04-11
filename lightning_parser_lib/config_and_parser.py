@@ -495,8 +495,8 @@ def export_strike_stitchings(bucketed_lightning_correlations: list[list[int, int
             strike_indices.add(parent_idx)
             strike_indices.add(child_idx)
         bucketed_strikes_indices.append(list(strike_indices))
-
-    export_bulk_to_folder(events=events, output_dir=config.strike_stitchings_dir, bucketed_strike_indices=bucketed_strikes_indices, bucketed_strike_correlations=bucketed_lightning_correlations, xlma_params=xlma_params)
+        
+    export_bulk_to_folder(events=events, output_dir=config.strike_stitchings_dir, bucketed_strike_indices=bucketed_strikes_indices, bucketed_strike_correlations=bucketed_lightning_correlations, xlma_params=xlma_params, num_cores=config.num_cores)
 
 
     if _include_deprecated:

@@ -293,8 +293,6 @@ def main():
 
     # This, at the top of the main function,
     # Allows binding all console outputs to output.txt
-    # i.e. if the server has a 'print' statement, it will send it to 'output.txt'
-    # The output.txt file will be automatically read by the config and parser
     remote_functions.run_self_with_output_filename("output.txt")
 
     ##################################################################################
@@ -324,7 +322,6 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 ```
 
 ### `client.py`
@@ -339,17 +336,15 @@ import lightning_parser_lib.number_crunchers.toolbox as toolbox
 
 def main():
     config_and_parser.rf.set_password("Whoop!-")
+    config_and_parser.rf.connect_to_server("192.168.50.157", 5509)
 
-    # Replace "123.456.789.123" with the ip of the server hosting server.py
-    config_and_parser.rf.connect_to_server("123.456.789.123", 5509)
-    
-
-    dummyconfig = config_and_parser.LightningConfig() # Create dummy config for additional parsing
-
+    localconfig = config_and_parser.LightningConfig(
+       num_cores=toolbox.cpu_pct_to_cores(0.9)
+    ) 
 
     print(config_and_parser.rf.ping())
 
-    headers = config_and_parser.get_headers(config=dummyconfig)
+    headers = config_and_parser.get_headers(config=localconfig)
     print(headers)
 
     # Now all function calls will use the server
@@ -373,17 +368,16 @@ def main():
         ("power_db", ">", -4),  # In dBW
         ("power_db", "<", 50),  # In dBW
     ]
-    events: pd.DataFrame = config_and_parser.get_events(filters, config=dummyconfig)
+    events: pd.DataFrame = config_and_parser.get_events(filters, config=localconfig)
     tprint("Events:", events)
-
 
     params = {
         # Creating an initial lightning strike
         "max_lightning_dist": 30000,  # Max distance between two points to determine it being involved in the same strike
-        "max_lightning_speed": 1.4e8,  # Max speed between two points in m/s (essentially dx/dt)
+        "max_lightning_speed": 1.4e6,  # Max speed between two points in m/s (essentially dx/dt)
         "min_lightning_speed": 0,  # Min speed between two points in m/s (essentially dx/dt)
         "min_lightning_points": 100,  # The minimum number of points to pass the system as a "lightning strike"
-        "max_lightning_time_threshold": 0.3,  # Max number of seconds between points 
+        "max_lightning_time_threshold": 0.15,  # Max number of seconds between points 
         "max_lightning_duration": 30, # Max seconds that define an entire lightning strike. This is essentially a "time window" for all of the points to fill the region that determines a "lightning strike"
 
         # Combining intercepting lightning strike data filtering
@@ -395,19 +389,28 @@ def main():
         "cache_results": True, # Set to true to cache results
         "max_cache_life_days": 7 # The number of days to save a cache
     }
-    bucketed_strikes_indices, bucketed_lightning_correlations = config_and_parser.bucket_dataframe_lightnings(events, config=dummyconfig, params=params)
+    bucketed_strikes_indices, bucketed_lightning_correlations = config_and_parser.bucket_dataframe_lightnings(events, config=localconfig, params=params)
+
+    #events, bucketed_strikes_indices, bucketed_lightning_correlations = config_and_parser.get_events_and_bucket_dataframe_lightnings(filters, dummyconfig, params)
 
     first_lightning_strike = events.iloc[bucketed_strikes_indices[0]]
+    print(first_lightning_strike)
 
+    config_and_parser.display_stats(events, bucketed_strikes_indices)
+
+    # Only export plot data with more than n datapoints
+    MAX_N_PTS = 1000
+    bucketed_strikes_indices, bucketed_lightning_correlations = config_and_parser.limit_to_n_points(bucketed_strikes_indices, bucketed_lightning_correlations, MAX_N_PTS)
+       
     xlma_params = XLMAParams(
         dark_theme=True,
         color_unit='power_db',
         cartopy_paths= toolbox.append_county([])
     )
+    config_and_parser.export_general_stats(bucketed_strikes_indices, bucketed_lightning_correlations, events, config=localconfig, xlma_params=xlma_params)
+    config_and_parser.export_all_strikes(bucketed_strikes_indices, events, localconfig, xlma_params)
 
-    config_and_parser.export_general_stats(bucketed_strikes_indices, bucketed_lightning_correlations, events, config=lightning_configuration, xlma_params=xlma_params)
-    print(first_lightning_strike)
-
+    config_and_parser.export_strike_stitchings(bucketed_lightning_correlations, events, localconfig, xlma_params)
 if __name__ == "__main__":
   main()
 ```
