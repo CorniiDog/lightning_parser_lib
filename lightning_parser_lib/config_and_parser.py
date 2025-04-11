@@ -407,12 +407,12 @@ def export_general_stats(bucketed_strikes_indices: list[list[int]],
     largest_strike = max(bucketed_strikes_indices, key=len)
     largest_stitch = max(bucketed_lightning_correlations, key=len)
 
-    tprint("Exporting XLMA diagram of largest Instance")
+    tprint("Exporting XLMA Diagram of Largest Instance")
     strike_image, _ = create_strike_image(xlma_params, events, largest_strike, largest_stitch)
     export_path = os.path.join(config.export_dir, "most_pts_xlma.tiff")
     export_strike_image(strike_image, export_path)
 
-    strike_gif, _ = create_strike_gif(xlma_params, events, largest_strike, largest_stitch)
+    strike_gif, _ = create_strike_gif(xlma_params, events, largest_strike, largest_stitch, num_cores=config.num_cores)
     export_path = os.path.join(config.export_dir, "most_pts_xlma.gif")
     export_strike_gif(strike_gif, export_path)
 

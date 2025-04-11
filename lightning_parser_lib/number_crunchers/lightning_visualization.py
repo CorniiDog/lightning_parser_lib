@@ -138,6 +138,10 @@ def main():
 
     plt.clf()
 
+global_shutdown_event = None
+def init_worker(shutdown_ev):
+    global global_shutdown_event
+    global_shutdown_event = shutdown_ev
 
 def colormap_to_hex(cmap_name: str) -> List[str]:
     """
@@ -872,44 +876,14 @@ def create_strike_image(xlma_params: XLMAParams,
 
     return cropped_img, range_params
 
-def create_strike_gif(
-    xlma_params: XLMAParams,
-    events: pd.DataFrame,
-    strike_indeces: List[int],
-    strike_stitchings: Optional[List[Tuple[int, int]]] = None,
-    num_frames: int = 60,
-    duration: int = 6000,
-    looped: bool = True,
-    range_params: RangeParams = RangeParams()
-) -> Tuple[io.BytesIO, RangeParams]:
-    """
-    Generate an animated GIF of the composite lightning strike visualization and return
-    it as an in-memory byte stream (BytesIO) that is savable.
-
-    Parameters:
-        xlma_params (XLMAParams): Parameter container for the lightning strike visualization.
-        events (pd.DataFrame): DataFrame containing lightning event data.
-        strike_indeces (List[int]): List of indices for the events to include.
-        strike_stitchings (Optional[List[Tuple[int, int]]]): Optional list of index pairs for connecting events.
-        num_frames (int, optional): Number of frames in the animated GIF (default is 60).
-        duration (int, optional): Total duration of the GIF in milliseconds (default is 6000).
-        looped (bool, optional): Whether the GIF should loop indefinitely (True) or play once (False).
-        range_params (RangeParams, optional): Precomputed or default range parameters for consistent scaling.
-
-    Returns:
-        Tuple[io.BytesIO, RangeParams]:
-            - A BytesIO object containing the GIF data.
-            - The updated RangeParams instance with computed plotting ranges.
-    """
-    # Initialize range parameters by making the first plot (without stitchings).
-    _, range_params = create_strike_image(
-        xlma_params, events, strike_indeces, None
-    )
-
+def _create_strike_gif_utility(args_list):
     frames = []
-    total_events = len(strike_indeces)
+    for args in args_list:
+        if global_shutdown_event and global_shutdown_event.is_set():
+            break
 
-    for frame in tqdm(range(1, num_frames + 1), desc="Generating Gif"):
+        total_events, frame, num_frames, strike_indeces, strike_stitchings, xlma_params, events, range_params = args
+
         # Determine the cutoff index for the current frame.
         cutoff = max(1, int(round(total_events * frame / num_frames)))
         # Select the subset of event indices.
@@ -928,6 +902,66 @@ def create_strike_gif(
         )
         # Append the frame as a NumPy array.
         frames.append(np.array(composite_img))
+
+    return frames
+
+def create_strike_gif(
+    xlma_params: XLMAParams,
+    events: pd.DataFrame,
+    strike_indeces: List[int],
+    strike_stitchings: Optional[List[Tuple[int, int]]] = None,
+    num_frames: int = 60,
+    duration: int = 6000,
+    looped: bool = True,
+    range_params: RangeParams = None,
+    num_cores:int = 1
+) -> Tuple[io.BytesIO, RangeParams]:
+    """
+    Generate an animated GIF of the composite lightning strike visualization and return
+    it as an in-memory byte stream (BytesIO) that is savable.
+
+    Parameters:
+        xlma_params (XLMAParams): Parameter container for the lightning strike visualization.
+        events (pd.DataFrame): DataFrame containing lightning event data.
+        strike_indeces (List[int]): List of indices for the events to include.
+        strike_stitchings (Optional[List[Tuple[int, int]]]): Optional list of index pairs for connecting events.
+        num_frames (int, optional): Number of frames in the animated GIF (default is 60).
+        duration (int, optional): Total duration of the GIF in milliseconds (default is 6000).
+        looped (bool, optional): Whether the GIF should loop indefinitely (True) or play once (False).
+        range_params (RangeParams, optional): Precomputed or default range parameters for consistent scaling.
+        num_cores (int): The number of cores to multiprocess to generate the image faster.
+
+    Returns:
+        Tuple[io.BytesIO, RangeParams]:
+            - A BytesIO object containing the GIF data.
+            - The updated RangeParams instance with computed plotting ranges.
+    """
+    shutdown_event = multiprocessing.Event()
+    # Initialize range parameters by making the first plot (without stitchings).
+    _, range_params = create_strike_image(
+        xlma_params, events, strike_indeces, None
+    )
+
+    frames = []
+    total_events = len(strike_indeces)
+
+    args_list = [
+        (total_events, frame, num_frames, strike_indeces, strike_stitchings, xlma_params, events, range_params)
+        for frame in range(1, num_frames + 1)
+    ]
+
+    args_list_bucketed = toolbox.split_into_groups(args_list, num_workers=30)
+
+    try:
+        if num_cores > 1:
+            with multiprocessing.Pool(processes=num_cores, initializer=init_worker, initargs=(shutdown_event,)) as pool:
+                for result in tqdm(pool.imap(_create_strike_gif_utility, args_list_bucketed), total=len(args_list_bucketed), desc="Exporting Strikes"):
+                    frames += result
+        else: #Only use one core, in-line
+            for args_list in tqdm(args_list_bucketed, desc="Generating GIF"):
+                frames += _create_strike_gif_utility(args_list_bucketed)
+    except KeyboardInterrupt:
+        shutdown_event.set()        
 
     # Compute duration per frame and set loop parameter (0 means indefinitely loop).
     frame_duration = duration / num_frames
@@ -1065,14 +1099,11 @@ def export_stats(xlma_params: XLMAParams, events: pd.DataFrame, bucketed_indeces
     plt.clf()
     plt.close()
 
-global_shutdown_event = None
-def init_worker(shutdown_ev):
-    global global_shutdown_event
-    global_shutdown_event = shutdown_ev
-
 def _export_bulk_to_folder(args):
     events, times, output_dir, xlma_params, bucketed_strike_indices, bucketed_strike_correlations = args
-
+    if global_shutdown_event and global_shutdown_event.is_set():
+            return
+    
     for i, strike_indeces in enumerate(bucketed_strike_indices):
         if global_shutdown_event and global_shutdown_event.is_set():
             break
@@ -1114,14 +1145,13 @@ def export_bulk_to_folder(events: pd.DataFrame, output_dir: str, bucketed_strike
         for bucketed_strike_i, bucketed_strike_corr in lightning_groups
     ]
 
-    must_be_inline = False
     try:
-        if num_cores > 1 and not must_be_inline:
+        if num_cores > 1:
             with multiprocessing.Pool(processes=num_cores, initializer=init_worker, initargs=(shutdown_event,)) as pool:
-                for _ in tqdm(pool.imap(_export_bulk_to_folder, args_list), total=len(args_list), desc="Exporting Strike"):
+                for _ in tqdm(pool.imap(_export_bulk_to_folder, args_list), total=len(args_list), desc="Exporting Strikes"):
                     pass
         else: #Only use one core, in-line
-            for args in tqdm(args_list, desc="Exporting Strike"):
+            for args in tqdm(args_list, desc="Exporting Strikes"):
                 _export_bulk_to_folder(args)
     except KeyboardInterrupt:
         shutdown_event.set()
