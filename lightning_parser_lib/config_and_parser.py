@@ -466,7 +466,6 @@ def export_all_strikes(bucketed_strikes_indices: list[list[int]],
                                             as_gif=True, sigma=1.5, transparency_threshold=-1)
         tprint("Finished plotting strikes as a heatmap")
 
-@deprecated(details="Plotly uses Kaleidoscope. Currently, Kaleidoscope engine has issues saving images. This function will continue to exist but will no longer be supported.")
 def export_strike_stitchings(bucketed_lightning_correlations: list[list[int, int]], 
                              events: pd.DataFrame, 
                              config: LightningConfig,
@@ -495,7 +494,7 @@ def export_strike_stitchings(bucketed_lightning_correlations: list[list[int, int
             strike_indices.add(parent_idx)
             strike_indices.add(child_idx)
         bucketed_strikes_indices.append(list(strike_indices))
-        
+
     export_bulk_to_folder(events=events, output_dir=config.strike_stitchings_dir, bucketed_strike_indices=bucketed_strikes_indices, bucketed_strike_correlations=bucketed_lightning_correlations, xlma_params=xlma_params, num_cores=config.num_cores)
 
 
