@@ -474,6 +474,8 @@ def split_into_groups(x: List[Any], num_workers: int):
     start = 0
     for i in range(n_groups):
         size = avg + (1 if i < remainder else 0)
+        if size == 0:
+            break
         groups.append(x[start:start+size])
         start += size
     return groups

@@ -455,7 +455,7 @@ def export_all_strikes(bucketed_strikes_indices: list[list[int]],
     os.makedirs(config.strike_dir, exist_ok=True)
 
 
-    export_bulk_to_folder(events=events, output_dir=config.strike_dir, bucketed_strike_indices=bucketed_strikes_indices, bucketed_strike_correlations=None, xlma_params=xlma_params)
+    export_bulk_to_folder(events=events, output_dir=config.strike_dir, bucketed_strike_indices=bucketed_strikes_indices, bucketed_strike_correlations=None, xlma_params=xlma_params, num_cores=config.num_cores)
 
             
     if _include_deprecated:

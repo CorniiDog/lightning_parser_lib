@@ -247,7 +247,7 @@ def range_bufferize(list_items: list[float], l_buffer_extension: float) -> Tuple
         Tuple[float, float]: The buffered (min, max) range.
     """
     l_min, l_max = min(list_items), max(list_items)
-    l_buffer_size = max(abs(l_max - l_min), 0.5) * l_buffer_extension
+    l_buffer_size = max(abs(l_max - l_min), 0.2) * l_buffer_extension
     return (l_min - l_buffer_size, l_max + l_buffer_size)
 
 ######################################################################
@@ -457,7 +457,7 @@ def create_strike_image(xlma_params: XLMAParams,
                         events: pd.DataFrame,
                         strike_indeces: List[int],
                         strike_stitchings: Optional[List[Tuple[int, int]]] = None,
-                        range_params: RangeParams = RangeParams()) -> Tuple[Image.Image, RangeParams]:
+                        range_params: RangeParams = None) -> Tuple[Image.Image, RangeParams]:
     """
     Create a composite lightning strike image with multiple subplots and stitching lines.
 
@@ -481,7 +481,10 @@ def create_strike_image(xlma_params: XLMAParams,
             A tuple where the first element is a PIL Image object representing the cropped composite visualization,
             and the second element is the updated RangeParams instance containing all computed ranges.
     """
-    df = events.iloc[strike_indeces].copy()
+    plt.close('all')
+    plt.clf()
+    plt.close()
+    df = events.copy(deep=True).iloc[strike_indeces]
     all_x_arr, all_y_arr, all_alt_arr = events[xlma_params.x_unit], events[xlma_params.y_unit], events[xlma_params.alt_unit]
 
     start_time_unit = df.iloc[0][xlma_params.time_unit]
@@ -493,12 +496,6 @@ def create_strike_image(xlma_params: XLMAParams,
     ######################################################################
     # Initialization and config adjustment
     ######################################################################
-
-    if xlma_params.time_as_datetime:
-        df['datetime'] = pd.to_datetime(df[xlma_params.time_unit], unit='s', utc=True)
-        time_unit_datetime = 'datetime'
-        range_params.time_unit_range = range_params.time_unit_range or range_bufferize(df[xlma_params.time_unit], xlma_params.buffer_extension)
-        range_params.time_unit_datetime_range = range_params.time_unit_datetime_range or pd.to_datetime(range_params.time_unit_range, unit='s', utc=True).to_list()
         
     if xlma_params.dark_theme:
         plt.style.use('dark_background')  # Apply dark mode
@@ -510,10 +507,6 @@ def create_strike_image(xlma_params: XLMAParams,
     # Convert Matplotlib colormap to hex colors for Datashader
     colormap = colormap_to_hex(xlma_params.colormap_scheme)
 
-    range_params.time_range = range_params.time_range or range_bufferize(df[xlma_params.time_unit], xlma_params.buffer_extension)
-    range_params.alt_range = range_params.alt_range or range_bufferize(df[xlma_params.alt_unit], xlma_params.buffer_extension)
-    range_params.x_range = range_params.x_range or range_bufferize(df[xlma_params.x_unit], xlma_params.buffer_extension)
-    range_params.y_range = range_params.y_range or range_bufferize(df[xlma_params.y_unit], xlma_params.buffer_extension)
 
     ######################################################################
     # Fig creation and formatting
@@ -524,10 +517,17 @@ def create_strike_image(xlma_params: XLMAParams,
     gs = gridspec.GridSpec(3, 3, height_ratios=[1, 1, 4], width_ratios=[4, 1, 0.1], wspace=0)
     ax0 = fig.add_subplot(gs[0, :])
     ax1 = fig.add_subplot(gs[1, 0])  # Top left
-    ax2 = fig.add_subplot(gs[1, 1], sharey=ax1)  # Top right
-    ax3 = fig.add_subplot(gs[2, 0], sharex=ax1)  # Bottom left (largest)
-    ax4 = fig.add_subplot(gs[2, 1], sharey=ax3)  # Bottom right
+    ax2 = fig.add_subplot(gs[1, 1])  # Top right
+    ax3 = fig.add_subplot(gs[2, 0])  # Bottom left (largest)
+    ax4 = fig.add_subplot(gs[2, 1])  # Bottom right
     ax_colorbar = fig.add_subplot(gs[:, 2])  # Bottom right
+
+    ax0.sharey(ax1)
+    ax2.sharey(ax1)
+
+    ax1.sharex(ax3)
+
+    ax3.sharey(ax4)
 
     ######################################################################
     # Colorbar
@@ -537,7 +537,20 @@ def create_strike_image(xlma_params: XLMAParams,
     if ((xlma_params.color_unit == xlma_params.time_unit and xlma_params.zero_time_unit_if_color_unit) or xlma_params.zero_colorbar) and len(df) > 0:
         df[color_unit_specific] -= df[xlma_params.color_unit].iloc[0]
     
-    range_params.colorbar_range = range_params.colorbar_range or (df[color_unit_specific].min(), df[color_unit_specific].max())
+    if not range_params:
+        range_params = RangeParams()
+        range_params.time_unit_range = range_bufferize(df[xlma_params.time_unit], xlma_params.buffer_extension)
+        range_params.time_unit_datetime_range = pd.to_datetime(range_params.time_unit_range, unit='s', utc=True).to_list()
+        range_params.time_range = range_bufferize(df[xlma_params.time_unit], xlma_params.buffer_extension)
+        range_params.alt_range = range_bufferize(df[xlma_params.alt_unit], xlma_params.buffer_extension)
+        range_params.x_range = range_bufferize(df[xlma_params.x_unit], xlma_params.buffer_extension)
+        range_params.y_range = range_bufferize(df[xlma_params.y_unit], xlma_params.buffer_extension)
+        
+        range_params.colorbar_range = (df[color_unit_specific].min(), df[color_unit_specific].max())
+
+    time_unit_datetime = 'datetime'
+    df['datetime'] = pd.to_datetime(df[xlma_params.time_unit], unit='s', utc=True)
+
     # Compute normalization based on your data (e.g., power_db values)
     norm = mcolors.Normalize(vmin=range_params.colorbar_range[0], vmax=range_params.colorbar_range[1])
     # Create a ScalarMappable with the chosen colormap
@@ -681,9 +694,12 @@ def create_strike_image(xlma_params: XLMAParams,
             # Filter counties that intersect with bounding box
             counties_in_box = counties[counties.geometry.intersects(bounding_box)]
 
+            if len(counties_in_box) == 0:
+                continue
+
             counties_in_box.boundary.plot(ax=ax3, edgecolor=marker_color, linewidth=xlma_params.county_line_width, zorder=2, alpha=xlma_params.county_line_alpha)
             # Add county name labels
-            for idx, row in counties_in_box.iterrows():
+            for _, row in counties_in_box.iterrows():
                 centroid = row.geometry.centroid
                 
                 x_buffer_size = (range_params.x_range[1] - range_params.x_range[0]) * xlma_params.buffer_extension
@@ -696,7 +712,8 @@ def create_strike_image(xlma_params: XLMAParams,
 
                 ax3.text(centroid.x, centroid.y, row['NAME'], ha='center', color=xlma_params.county_text_color, fontsize=xlma_params.county_text_font_size, alpha=xlma_params.county_text_alpha)
 
-
+    ax3.set_xlim(extent[0], extent[1])
+    ax3.set_ylim(extent[2], extent[3])
     ax3.set_xlabel(xlma_params.headers[xlma_params.x_unit])
     ax3.set_ylabel(xlma_params.headers[xlma_params.y_unit])
 
@@ -833,7 +850,9 @@ def create_strike_image(xlma_params: XLMAParams,
 
     buf = io.BytesIO()
     fig.savefig(buf, format='png', dpi=xlma_params.dpi)
-    plt.close(fig)
+    plt.close('all')
+    plt.clf()
+    plt.close()
     buf.seek(0)
 
     # Open the image using Pillow
@@ -850,8 +869,6 @@ def create_strike_image(xlma_params: XLMAParams,
     cropped_img = img.crop((left, top, right, bottom))
 
     return cropped_img, range_params
-
-from typing import Optional
 
 def create_strike_gif(
     xlma_params: XLMAParams,
@@ -961,12 +978,6 @@ def export_strike_gif(gif_buffer: io.BytesIO, export_path: str):
     with open(export_path, "wb") as f:
         f.write(gif_buffer.getvalue())
 
-import datetime
-import matplotlib.pyplot as plt
-import pandas as pd
-from typing import List
-# Assuming XLMAParams is already defined and imported
-
 def export_stats(xlma_params: XLMAParams, events: pd.DataFrame, bucketed_indeces: List[List[int]], export_path: str):
     """
     Exports a statistics plot to an image file.
@@ -981,6 +992,9 @@ def export_stats(xlma_params: XLMAParams, events: pd.DataFrame, bucketed_indeces
         bucketed_indeces (List[List[int]]): List of buckets, where each bucket is a list of event indices.
         export_path (str): The file path where the generated image will be saved.
     """
+    plt.close('all')
+    plt.clf()
+    plt.close()
     if xlma_params.dark_theme:
         plt.style.use('dark_background')  # Apply dark mode
     else:
@@ -1045,7 +1059,9 @@ def export_stats(xlma_params: XLMAParams, events: pd.DataFrame, bucketed_indeces
     # Export the plot to an image file with the specified DPI.
     dpi_value = xlma_params.dpi if hasattr(xlma_params, 'dpi') else 300
     fig.savefig(export_path, dpi=dpi_value)
-    plt.close(fig)
+    plt.close('all')
+    plt.clf()
+    plt.close()
 
 global_shutdown_event = None
 def init_worker(shutdown_ev):
@@ -1068,7 +1084,7 @@ def _export_bulk_to_folder(args):
 
         file_out_path = os.path.join(output_dir, safe_start_time) + ".tiff"
 
-        if bucketed_strike_correlations:
+        if bucketed_strike_correlations and len(bucketed_strike_correlations) > 0:
             strike_correlations = bucketed_strike_correlations[i]
         else:
             strike_correlations = None
@@ -1085,7 +1101,7 @@ def export_bulk_to_folder(events: pd.DataFrame, output_dir: str, bucketed_strike
     if bucketed_strike_correlations:
         bucketed_bucketed_strike_correlations = toolbox.split_into_groups(bucketed_strike_correlations, num_workers)
     else:
-        bucketed_bucketed_strike_correlations = [None] * len(bucketed_bucketed_strike_indices)
+        bucketed_bucketed_strike_correlations = toolbox.split_into_groups([None] * len(bucketed_bucketed_strike_indices), num_workers)
 
     lightning_groups = []
     for i, sub_bucketed_strike_indices in enumerate(bucketed_bucketed_strike_indices):
@@ -1093,11 +1109,12 @@ def export_bulk_to_folder(events: pd.DataFrame, output_dir: str, bucketed_strike
         
     args_list = [
         (events, times, output_dir, xlma_params, bucketed_strike_i, bucketed_strike_corr)
-        for (bucketed_strike_i, bucketed_strike_corr) in lightning_groups
+        for bucketed_strike_i, bucketed_strike_corr in lightning_groups
     ]
 
+    must_be_inline = False
     try:
-        if num_cores > 1:
+        if num_cores > 1 and not must_be_inline:
             with multiprocessing.Pool(processes=num_cores, initializer=init_worker, initargs=(shutdown_event,)) as pool:
                 for _ in tqdm(pool.imap(_export_bulk_to_folder, args_list), total=len(args_list), desc="Exporting Strike"):
                     pass
