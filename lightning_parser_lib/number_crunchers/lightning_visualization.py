@@ -247,7 +247,7 @@ def range_bufferize(list_items: list[float], l_buffer_extension: float) -> Tuple
         Tuple[float, float]: The buffered (min, max) range.
     """
     l_min, l_max = min(list_items), max(list_items)
-    l_buffer_size = max(l_max - l_min, 0.5) * l_buffer_extension
+    l_buffer_size = max(abs(l_max - l_min), 0.5) * l_buffer_extension
     return (l_min - l_buffer_size, l_max + l_buffer_size)
 
 ######################################################################
