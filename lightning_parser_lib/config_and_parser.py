@@ -178,6 +178,8 @@ def _cache_and_parse(config: LightningConfig):
     if server_sided_config_override:
         config = server_sided_config_override
 
+    os.makedirs(config.lightning_data_folder, exist_ok=True)
+
     files = os.listdir(config.lightning_data_folder)
     if not files:
         tprint(f"Please put lightning LYLOUT files in the directory '{config.lightning_data_folder}'")
@@ -191,6 +193,8 @@ def _cache_and_parse(config: LightningConfig):
                                                config.cache_path)
     # Display available headers from the database.
     tprint("Headers:", database_parser.get_headers(config.db_path))
+
+
 
 @rf.as_remote()
 def cache_and_parse(config: LightningConfig):
@@ -306,6 +310,8 @@ def bucket_dataframe_lightnings(events: pd.DataFrame, config: LightningConfig, p
     if server_sided_config_override:
         config = server_sided_config_override
 
+    _cache_and_parse(config)
+
     return _bucket_dataframe_lightnings(events=events, config=config, params=params)
     
 
@@ -343,15 +349,10 @@ def delete_sql_database(config: LightningConfig):
     """
     if server_sided_config_override:
         config = server_sided_config_override
-    time.sleep(2)
-    try:
-        if os.path.exists(config.cache_dir):
-            shutil.rmtree(config.cache_dir)
-            tprint("Deleted:", config.cache_dir)
-        else:
-            tprint("Directory does not exist:", config.cache_dir)
-    except Exception as e:
-        tprint("Error while deleting:", e)
+    print("Received function to delete databse")
+    rf.qs.clear_hexes() # Clear hexes
+    shutil.rmtree(config.cache_dir)
+
 
 @rf.as_remote()
 def delete_pkl_cache(config: LightningConfig):
