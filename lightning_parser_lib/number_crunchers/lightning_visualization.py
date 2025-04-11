@@ -32,6 +32,8 @@ Functions (continued):
                         strike_stitchings: List[Tuple[int, int]]) -> Image
         Generates the complete lightning strike image with multiple subplots and optional stitching lines.
 """
+import matplotlib
+matplotlib.use(backend='Agg')  # Use non-GUI backend suitable for multiprocessing
 import pandas as pd
 import datashader as ds
 import datashader.transfer_functions as tf
@@ -58,8 +60,6 @@ import re
 import os
 import multiprocessing
 from . import toolbox
-import matplotlib
-matplotlib.use('Agg')  # Use non-GUI backend suitable for multiprocessing
 
 def main():
     """
@@ -486,7 +486,7 @@ def create_strike_image(xlma_params: XLMAParams,
     plt.close('all')
     plt.clf()
     plt.close()
-    df = events.copy(deep=True).iloc[strike_indeces]
+    df = events.iloc[strike_indeces].copy(deep=True)
     all_x_arr, all_y_arr, all_alt_arr = events[xlma_params.x_unit], events[xlma_params.y_unit], events[xlma_params.alt_unit]
 
     start_time_unit = df.iloc[0][xlma_params.time_unit]
