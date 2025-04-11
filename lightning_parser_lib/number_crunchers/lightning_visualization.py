@@ -546,7 +546,7 @@ def create_strike_image(xlma_params: XLMAParams,
         range_params.x_range = range_bufferize(df[xlma_params.x_unit], xlma_params.buffer_extension)
         range_params.y_range = range_bufferize(df[xlma_params.y_unit], xlma_params.buffer_extension)
         
-        range_params.colorbar_range = (df[color_unit_specific].min(), df[color_unit_specific].max())
+        range_params.colorbar_range = [df[color_unit_specific].min(), df[color_unit_specific].max()]
 
     time_unit_datetime = 'datetime'
     df['datetime'] = pd.to_datetime(df[xlma_params.time_unit], unit='s', utc=True)
@@ -901,7 +901,7 @@ def create_strike_gif(
     """
     # Initialize range parameters by making the first plot (without stitchings).
     _, range_params = create_strike_image(
-        xlma_params, events, strike_indeces, None, range_params
+        xlma_params, events, strike_indeces, None
     )
 
     frames = []
