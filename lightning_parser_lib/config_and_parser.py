@@ -42,16 +42,21 @@ class LightningConfig:
         self.num_cores = num_cores
         self.lightning_data_folder = lightning_data_folder
         self.data_extension = data_extension
+        self.db_path = os.path.join(self.cache_dir, "lylout_db.db")
+        self.cache_path = os.path.join(self.cache_dir, "os_cache.pkl")
 
         self.cache_dir = cache_dir
-        self.db_path = os.path.join(cache_dir, "lylout_db.db")
-        self.cache_path = os.path.join(cache_dir, "os_cache.pkl")
 
         self.csv_dir = csv_dir
         self.export_dir = export_dir
         self.strike_dir = strike_dir
         self.strike_stitchings_dir = strike_stitchings_dir
 
+        self.create_additional_inits()
+
+    def create_additional_inits(self):
+        self.db_path = os.path.join(self.cache_dir, "lylout_db.db")
+        self.cache_path = os.path.join(self.cache_dir, "os_cache.pkl")
         # Ensure required directories exist.
         os.makedirs(self.lightning_data_folder, exist_ok=True)
         os.makedirs(self.cache_dir, exist_ok=True)
@@ -181,6 +186,8 @@ def _cache_and_parse(config: LightningConfig):
 
     os.makedirs(config.lightning_data_folder, exist_ok=True)
 
+    config.create_additional_inits() # Just in case, ensure it all works together
+    
     files = os.listdir(config.lightning_data_folder)
     if not files:
         tprint(f"Please put lightning LYLOUT files in the directory '{config.lightning_data_folder}'")
