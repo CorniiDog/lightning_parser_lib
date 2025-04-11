@@ -58,6 +58,8 @@ import re
 import os
 import multiprocessing
 from . import toolbox
+import matplotlib
+matplotlib.use('Agg')  # Use non-GUI backend suitable for multiprocessing
 
 def main():
     """
