@@ -22,6 +22,7 @@ from deprecation import deprecated
 import datetime
 import re
 from tqdm import tqdm
+from process_managerial import QueueStatus
 
 rf = RemoteFunctions()
 
@@ -350,7 +351,12 @@ def delete_sql_database(config: LightningConfig):
     if server_sided_config_override:
         config = server_sided_config_override
     print("Received function to delete databse")
-    rf.qs.clear_hexes() # Clear hexes
+
+    # Clear all completed hexes earlier
+    for hex_property in rf.qs.get_all_hex_properties():
+        if hex_property.result in [QueueStatus.RETURNED_CLEAN, QueueStatus.RETURNED_ERROR, QueueStatus.STOPPED]:
+            unique_hex = hex_property.unique_hex
+            rf.qs.clear_hex(unique_hex)
     shutil.rmtree(config.cache_dir)
 
 
