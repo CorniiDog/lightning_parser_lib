@@ -192,6 +192,8 @@ def _cache_and_parse(config: LightningConfig):
     # Display available headers from the database.
     tprint("Headers:", database_parser.get_headers(config.db_path))
 
+
+
 @rf.as_remote()
 def cache_and_parse(config: LightningConfig):
     """
@@ -343,8 +345,9 @@ def delete_sql_database(config: LightningConfig):
     """
     if server_sided_config_override:
         config = server_sided_config_override
-
+    rf.qs.clear_hexes() # Clear hexes
     shutil.rmtree(config.cache_dir)
+
 
 @rf.as_remote()
 def delete_pkl_cache(config: LightningConfig):
