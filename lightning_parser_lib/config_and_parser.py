@@ -42,10 +42,11 @@ class LightningConfig:
         self.num_cores = num_cores
         self.lightning_data_folder = lightning_data_folder
         self.data_extension = data_extension
-        self.db_path = os.path.join(self.cache_dir, "lylout_db.db")
-        self.cache_path = os.path.join(self.cache_dir, "os_cache.pkl")
 
         self.cache_dir = cache_dir
+
+        self.db_path = os.path.join(self.cache_dir, "lylout_db.db")
+        self.cache_path = os.path.join(self.cache_dir, "os_cache.pkl")
 
         self.csv_dir = csv_dir
         self.export_dir = export_dir
