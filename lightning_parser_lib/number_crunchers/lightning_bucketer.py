@@ -395,7 +395,10 @@ def bucket_dataframe_lightnings(
                         temp_filtered_groups[i].append(child_indece)
                     if not parent_in_group:
                         temp_filtered_groups[i].append(parent_indece)
-                    temp_bucketed_correlations.append((child_indece, parent_indece))
+                    temp_bucketed_correlations[i].append((child_indece, parent_indece))
+                else:
+                    temp_filtered_groups.append([child_indece, parent_indece])
+                    temp_bucketed_correlations.append([(child_indece, parent_indece)])
         
         bucketed_correlations = temp_bucketed_correlations
         filtered_groups = temp_filtered_groups
