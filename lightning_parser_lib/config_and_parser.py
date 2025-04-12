@@ -155,8 +155,8 @@ def upload_lylout_file(config: LightningConfig, filename: str, contents: str) ->
     return True
     
 @rf.as_remote_no_queue()
-def limit_to_n_points(bucketed_strikes_indices: list[list[int]],
-                      bucketed_lightning_correlations: list[list[int, int]],
+def limit_to_n_points(bucketed_strikes_indices: List[List[int]],
+                      bucketed_lightning_correlations: List[List[Tuple[int, int]]],
                       min_points_threshold: int):
     
     """
