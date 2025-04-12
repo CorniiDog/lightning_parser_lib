@@ -125,7 +125,7 @@ def main():
         ("power_db", ">", -4),  # In dBW
         ("power_db", "<", 50),  # In dBW
     ]
-    events: pd.DataFrame = config_and_parser.get_events(filters, config=localconfig)
+    events: pd.DataFrame = config_and_parser.get_events(filters, config=lightning_configuration)
     tprint("Events:", events)
 
     params = {
@@ -141,7 +141,7 @@ def main():
         "cache_results": True, # Set to true to cache results
         "max_cache_life_days": 7 # The number of days to save a cache
     }
-    bucketed_strikes_indices, bucketed_lightning_correlations = config_and_parser.bucket_dataframe_lightnings(events, config=localconfig, params=params)
+    bucketed_strikes_indices, bucketed_lightning_correlations = config_and_parser.bucket_dataframe_lightnings(events, config=lightning_configuration, params=params)
 
     # Example: To get a Pandas DataFrame of the first strike in the list, you do:
     # ```
