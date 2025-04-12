@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: lightning_parser_lib
-Version: 0.2.92
+Version: 0.2.93
 Summary: Connor's Lightning Parser Lib (LPL) is an extremely powerful analysis utility with a simplistic front-end in mind.
 Author-email: Connor White <connor.sw.personal@gmail.com>
 License-Expression: MIT
@@ -139,8 +139,8 @@ def main():
     ####################################################################################
     # Filter params for extracting data points from the SQLite database
     ####################################################################################
-    start_time = datetime.datetime(2020, 4, 29, 13, 0, tzinfo=datetime.timezone.utc).timestamp()  # Timestamp converts to unix (float)
-    end_time = datetime.datetime(2020, 4, 29, 14, 59, tzinfo=datetime.timezone.utc).timestamp()  # Timestamp converts to unix (float)
+    start_time = datetime.datetime(2022, 7, 12, 22, 19, tzinfo=datetime.timezone.utc).timestamp()  # Timestamp converts to unix (float)
+    end_time = datetime.datetime(2022, 7, 12, 22, 20, tzinfo=datetime.timezone.utc).timestamp()  # Timestamp converts to unix (float)
 
     # Build filter list for time_unix boundaries.
     # Look at "List of headers" above for additional
@@ -155,30 +155,23 @@ def main():
         ("power_db", ">", -4),  # In dBW
         ("power_db", "<", 50),  # In dBW
     ]
-    events: pd.DataFrame = config_and_parser.get_events(filters, config=lightning_configuration)
+    events: pd.DataFrame = config_and_parser.get_events(filters, config=localconfig)
     tprint("Events:", events)
 
-    ####################################################################################
-    # Identifying the lightning strikes
-    ####################################################################################
-
-    # Additional parameters that determines "What points make up a single lightning strike"
-    # They are explicitly defined
     params = {
         # Creating an initial lightning strike
-        "max_lightning_dist": 30000,  # Max distance between two points to determine it being involved in the same strike
+        "max_lightning_dist": 3000,  # Max distance between two points to determine it being involved in the same strike
         "max_lightning_speed": 1.4e8,  # Max speed between two points in m/s (essentially dx/dt)
         "min_lightning_speed": 0,  # Min speed between two points in m/s (essentially dx/dt)
         "min_lightning_points": 100,  # The minimum number of points to pass the system as a "lightning strike"
-        "max_lightning_time_threshold": 0.3,  # Max number of seconds between points 
+        "max_lightning_time_threshold": 0.15,  # Max number of seconds between points 
         "max_lightning_duration": 30, # Max seconds that define an entire lightning strike. This is essentially a "time window" for all of the points to fill the region that determines a "lightning strike"
-        
+
         # Caching
         "cache_results": True, # Set to true to cache results
         "max_cache_life_days": 7 # The number of days to save a cache
     }
-    
-    bucketed_strikes_indices, bucketed_lightning_correlations = config_and_parser.bucket_dataframe_lightnings(events, config=lightning_configuration, params=params)
+    bucketed_strikes_indices, bucketed_lightning_correlations = config_and_parser.bucket_dataframe_lightnings(events, config=localconfig, params=params)
 
     # Example: To get a Pandas DataFrame of the first strike in the list, you do:
     # ```
@@ -273,11 +266,11 @@ filters = [
 # They are explicitly defined
 params = {
         # Creating an initial lightning strike
-        "max_lightning_dist": 30000,  # Max distance between two points to determine it being involved in the same strike
+        "max_lightning_dist": 3000,  # Max distance between two points to determine it being involved in the same strike
         "max_lightning_speed": 1.4e8,  # Max speed between two points in m/s (essentially dx/dt)
         "min_lightning_speed": 0,  # Min speed between two points in m/s (essentially dx/dt)
         "min_lightning_points": 100,  # The minimum number of points to pass the system as a "lightning strike"
-        "max_lightning_time_threshold": 0.3,  # Max number of seconds between points 
+        "max_lightning_time_threshold": 0.15,  # Max number of seconds between points 
         "max_lightning_duration": 30, # Max seconds that define an entire lightning strike. This is essentially a "time window" for all of the points to fill the region that determines a "lightning strike"
 
         # Caching
@@ -394,8 +387,8 @@ def main():
 
     params = {
         # Creating an initial lightning strike
-        "max_lightning_dist": 30000,  # Max distance between two points to determine it being involved in the same strike
-        "max_lightning_speed": 1.4e6,  # Max speed between two points in m/s (essentially dx/dt)
+        "max_lightning_dist": 3000,  # Max distance between two points to determine it being involved in the same strike
+        "max_lightning_speed": 1.4e8,  # Max speed between two points in m/s (essentially dx/dt)
         "min_lightning_speed": 0,  # Min speed between two points in m/s (essentially dx/dt)
         "min_lightning_points": 100,  # The minimum number of points to pass the system as a "lightning strike"
         "max_lightning_time_threshold": 0.15,  # Max number of seconds between points 
