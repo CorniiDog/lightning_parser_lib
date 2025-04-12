@@ -366,51 +366,36 @@ def bucket_dataframe_lightnings(
     if raw_groups == None:
         return None, None
 
-    bucketed_correlations = lightning_stitcher.stitch_lightning_strikes(raw_groups, df, params)
+    temp_bucketed_correlations = lightning_stitcher.stitch_lightning_strikes(raw_groups, df, params)
 
+
+    bucketed_correlations: List[List[Tuple[int, int]]] = []
     filtered_groups: List[List[int]] = []
+    for correlations in temp_bucketed_correlations:
+        for correlation in correlations:
+            child_indece = correlation[0]
+            parent_indece = correlation[1]
 
-    combine = params.get("combine_strikes_with_intercepting_times", True)
-
-    if not combine:
-        temp_bucketed_correlations: List[List[Tuple[int, int]]] = []
-        temp_filtered_groups: List[List[int]] = []
-        for correlations in bucketed_correlations:
-            for correlation in correlations:
-                child_indece = correlation[0]
-                parent_indece = correlation[1]
-
-                found_i = False
-                child_in_group = False
-                parent_in_group = False
-                for i, temp_filtered_group in enumerate(temp_filtered_groups):
-                    child_in_group = (child_indece in temp_filtered_group)
-                    parent_in_group = (parent_indece in temp_filtered_group)
-                    if child_in_group or parent_in_group:
-                        found_i = True
-                        break
-                
-                if found_i:
-                    if not child_in_group:
-                        temp_filtered_groups[i].append(child_indece)
-                    if not parent_in_group:
-                        temp_filtered_groups[i].append(parent_indece)
-                    temp_bucketed_correlations[i].append((child_indece, parent_indece))
-                else:
-                    temp_filtered_groups.append([child_indece, parent_indece])
-                    temp_bucketed_correlations.append([(child_indece, parent_indece)])
-        
-        bucketed_correlations = temp_bucketed_correlations
-        filtered_groups = temp_filtered_groups
+            found_i = False
+            child_in_group = False
+            parent_in_group = False
+            for i, temp_filtered_group in enumerate(filtered_groups):
+                child_in_group = (child_indece in temp_filtered_group)
+                parent_in_group = (parent_indece in temp_filtered_group)
+                if child_in_group or parent_in_group:
+                    found_i = True
+                    break
+            
+            if found_i:
+                if not child_in_group:
+                    filtered_groups[i].append(child_indece)
+                if not parent_in_group:
+                    filtered_groups[i].append(parent_indece)
+                bucketed_correlations[i].append((child_indece, parent_indece))
+            else:
+                filtered_groups.append([child_indece, parent_indece])
+                bucketed_correlations.append([(child_indece, parent_indece)])
                         
-    else:
-        # Gather unique indices from correlations.
-        for correlations in bucketed_correlations:
-            unique_indices_set = {idx for pair in correlations for idx in pair}
-            unique_indices = list(unique_indices_set)
-
-            filtered_groups.append(unique_indices)
-
     if use_cache:
         now = datetime.datetime.now(tz=datetime.timezone.utc)
         save_result_cache(df, params, (filtered_groups, bucketed_correlations, now))

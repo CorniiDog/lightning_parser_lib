@@ -111,11 +111,6 @@ def main():
         "max_lightning_time_threshold": 0.3,  # Max number of seconds between points 
         "max_lightning_duration": 30, # Max seconds that define an entire lightning strike. This is essentially a "time window" for all of the points to fill the region that determines a "lightning strike"
 
-        # Combining intercepting lightning strike data filtering
-        "combine_strikes_with_intercepting_times": True, # Set to true to ensure that strikes with intercepting times get combined. 
-        "intercepting_times_extension_buffer": 0.6, # Number of seconds of additional overlap to allow an additional strike to be involved
-        "intercepting_times_extension_max_distance": 100000, # The max distance between the start point of one lightning strike and at least one from the entirety of another lightning strike's points
-
         # Caching
         "cache_results": True, # Set to true to cache results
         "max_cache_life_days": 7 # The number of days to save a cache
