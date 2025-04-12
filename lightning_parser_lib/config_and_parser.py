@@ -170,8 +170,14 @@ def limit_to_n_points(bucketed_strikes_indices: List[List[int]],
     Returns:
         tuple: Filtered (bucketed_strikes_indices, bucketed_lightning_correlations).
     """
-    filtered_strikes = [lst for lst in bucketed_strikes_indices if len(lst) > min_points_threshold]
-    filtered_correlations = [lst for lst in bucketed_lightning_correlations if len(lst) > min_points_threshold]
+
+    filtered_correlations = []
+    filtered_strikes = []
+    for i, correlation in enumerate(bucketed_lightning_correlations):
+        if len(correlation) > min_points_threshold:
+            filtered_correlations.append(correlation)
+            filtered_strikes.append(bucketed_strikes_indices[i])
+
     return filtered_strikes, filtered_correlations
 
 def _cache_and_parse(config: LightningConfig):
