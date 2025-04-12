@@ -64,6 +64,12 @@ from .lightning_visualization import (
     export_bulk_to_folder
 )
 
+from lightning_statistics import (
+    generate_prestats,
+    compute_detailed_stats,
+    print_stats
+)
+
 __all__ = [
     # database_parser
     "get_dat_files_paths",
@@ -125,5 +131,9 @@ __all__ = [
     "export_strike_image",
     "export_strike_gif",
     "export_stats",
-    "export_bulk_to_folder"
+    "export_bulk_to_folder",
+    # lightning_statistics
+    "generate_prestats",
+    "compute_detailed_stats",
+    "print_stats"
 ]
