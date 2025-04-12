@@ -379,19 +379,21 @@ def bucket_dataframe_lightnings(
             found_i = False
             child_in_group = False
             parent_in_group = False
+            index_used = 0
             for i, temp_filtered_group in enumerate(filtered_groups):
                 child_in_group = (child_indece in temp_filtered_group)
                 parent_in_group = (parent_indece in temp_filtered_group)
                 if child_in_group or parent_in_group:
                     found_i = True
+                    index_used = i
                     break
             
             if found_i:
                 if not child_in_group:
-                    filtered_groups[i].append(child_indece)
+                    filtered_groups[index_used].append(child_indece)
                 if not parent_in_group:
-                    filtered_groups[i].append(parent_indece)
-                bucketed_correlations[i].append((child_indece, parent_indece))
+                    filtered_groups[index_used].append(parent_indece)
+                bucketed_correlations[index_used].append((child_indece, parent_indece))
             else:
                 filtered_groups.append([child_indece, parent_indece])
                 bucketed_correlations.append([(child_indece, parent_indece)])
