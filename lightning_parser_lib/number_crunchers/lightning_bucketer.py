@@ -116,7 +116,7 @@ def _group_process(args_list):
                 if np.any(distances_squared <= max_dist_squared):
                     # Check speed constraints.
                     candidate_dt_squared = candidate_dt * candidate_dt
-                    dt_squared = np.where(candidate_dt_squared < 1e-5, 1e-5, candidate_dt_squared)
+                    dt_squared = np.where(candidate_dt_squared == 0, 1e-10, candidate_dt_squared)
                     speeds_squared = distances_squared / dt_squared
 
                     if np.any((speeds_squared >= min_speed_squared) & (speeds_squared <= max_speed_squared)):

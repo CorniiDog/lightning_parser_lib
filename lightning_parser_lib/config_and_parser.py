@@ -335,6 +335,9 @@ def display_stats(events: pd.DataFrame, bucketed_strikes_indices: list[list[int]
     total_points_passed = 0
     strike_durations = []
 
+    if len(bucketed_strikes_indices) == 0:
+        raise ValueError("The list 'bucketed_strikes_indices' is empty")
+
     for strike in bucketed_strikes_indices:
         start_time_unix = events.iloc[strike[0]]["time_unix"]
         end_time_unix = events.iloc[strike[-1]]["time_unix"]

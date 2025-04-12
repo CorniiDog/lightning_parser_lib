@@ -116,7 +116,7 @@ def stitch_lightning_strike(strike_indeces: list[int], events: pd.DataFrame, par
             dt = current_time - times_pre
 
             dt_squared = (dt * dt)
-            dt_squared = np.where(dt_squared < 1e-5, 1e-5, dt_squared)  # Avoid divide-by-zero
+            dt_squared = np.where(dt_squared == 0, 1e-10, dt_squared)
 
             # Compute squared speeds (m²/s²).
             speeds_squared = distances_squared / dt_squared
@@ -187,13 +187,13 @@ def stitch_lightning_strikes(bucketed_strike_indices: list[list[int]], events: p
     max_distance = params.get("intercepting_times_extension_max_distance", 15000)
     max_distance_sq = max_distance ** 2
 
-    # Precompute event data arrays for fast lookup.
-    all_times = events["time_unix"].values
-    all_x = events["x"].values
-    all_y = events["y"].values
-    all_z = events["z"].values
-
     if combine:
+        # Precompute event data arrays for fast lookup.
+        all_times = events["time_unix"].values
+        all_x = events["x"].values
+        all_y = events["y"].values
+        all_z = events["z"].values
+
         temp_bucketed_correlations = []
         for correlations in tqdm(bucketed_correlations, desc="Grouping Intercepting Lightning Strikes", total=len(bucketed_correlations)):
             if len(correlations) == 0:
