@@ -370,12 +370,43 @@ def bucket_dataframe_lightnings(
 
     filtered_groups: List[List[int]] = []
 
-    # Gather unique indices from correlations.
-    for correlations in bucketed_correlations:
-        unique_indices_set = {idx for pair in correlations for idx in pair}
-        unique_indices = list(unique_indices_set)
+    combine = params.get("combine_strikes_with_intercepting_times", True)
 
-        filtered_groups.append(unique_indices)
+    if not combine:
+        temp_bucketed_correlations: List[List[Tuple[int, int]]] = []
+        temp_filtered_groups: List[List[int]] = []
+        for correlations in bucketed_correlations:
+            for correlation in correlations:
+                child_indece = correlation[0]
+                parent_indece = correlation[1]
+
+                found_i = False
+                child_in_group = False
+                parent_in_group = False
+                for i, temp_filtered_group in enumerate(temp_filtered_groups):
+                    child_in_group = (child_indece in temp_filtered_group)
+                    parent_in_group = (parent_indece in temp_filtered_group)
+                    if child_in_group or parent_in_group:
+                        found_i = True
+                        break
+                
+                if found_i:
+                    if not child_in_group:
+                        temp_filtered_groups[i].append(child_indece)
+                    if not parent_in_group:
+                        temp_filtered_groups[i].append(parent_indece)
+                    temp_bucketed_correlations.append((child_indece, parent_indece))
+        
+        bucketed_correlations = temp_bucketed_correlations
+        filtered_groups = temp_filtered_groups
+                        
+    else:
+        # Gather unique indices from correlations.
+        for correlations in bucketed_correlations:
+            unique_indices_set = {idx for pair in correlations for idx in pair}
+            unique_indices = list(unique_indices_set)
+
+            filtered_groups.append(unique_indices)
 
     if use_cache:
         now = datetime.datetime.now(tz=datetime.timezone.utc)
