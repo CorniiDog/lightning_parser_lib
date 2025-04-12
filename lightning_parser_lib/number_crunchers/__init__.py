@@ -64,7 +64,7 @@ from .lightning_visualization import (
     export_bulk_to_folder
 )
 
-from lightning_statistics import (
+from .lightning_statistics import (
     generate_prestats,
     compute_detailed_stats,
     print_stats
