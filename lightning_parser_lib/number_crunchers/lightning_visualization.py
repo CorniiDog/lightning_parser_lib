@@ -902,10 +902,11 @@ def _create_strike_gif_utility(args_list):
 
         total_events, frame, num_frames, strike_indeces, strike_stitchings, xlma_params, events, range_params = args
 
-        # Determine the cutoff index for the current frame.
-        cutoff = max(1, int(round(total_events * frame / num_frames)))
-        # Select the subset of event indices.
-        partial_indices = strike_indeces[:cutoff]
+        total_events, frame, num_frames, strike_indeces, strike_stitchings, xlma_params, events, range_params, min_time, max_time = args
+
+        frame_time_cutoff = min_time + (frame / num_frames) * (max_time - min_time)
+        partial_indices = [i for i in strike_indeces if events.iloc[i][xlma_params.time_unit] <= frame_time_cutoff]
+
         # If strike_stitchings is provided, filter for those with both endpoints within the current cutoff.
         if strike_stitchings is not None:
             partial_stitchings = [
@@ -962,9 +963,13 @@ def create_strike_gif(
 
     frames = []
     total_events = len(strike_indeces)
+    
+
+    min_time = events.iloc[strike_indeces][xlma_params.time_unit].min()
+    max_time = events.iloc[strike_indeces][xlma_params.time_unit].max()
 
     args_list = [
-        (total_events, frame, num_frames, strike_indeces, strike_stitchings, xlma_params, events, range_params)
+        (total_events, frame, num_frames, strike_indeces, strike_stitchings, xlma_params, events, range_params, min_time, max_time)
         for frame in range(1, num_frames + 1)
     ]
 
