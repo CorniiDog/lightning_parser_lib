@@ -51,6 +51,7 @@ import matplotlib.dates as mdates
 import datetime
 from PIL import Image
 from matplotlib.collections import LineCollection
+from matplotlib.ticker import AutoMinorLocator
 import io
 import imageio
 import geopandas as gpd
@@ -847,6 +848,23 @@ def create_strike_image(xlma_params: XLMAParams,
     y_min, y_max = ax3.get_ylim()
     ax3.xaxis.set_major_formatter(FuncFormatter(conditional_formatter_factory(x_min, x_max)))
     ax3.yaxis.set_major_formatter(FuncFormatter(conditional_formatter_factory(y_min, y_max)))
+
+    # Add minor ticks between the major ticks.
+    ax0.xaxis.set_minor_locator(AutoMinorLocator(4)) # 4 means three minor tick between every major tick
+    ax0.yaxis.set_minor_locator(AutoMinorLocator(4)) # 4 means three minor tick between every major tick
+
+    ax1.xaxis.set_minor_locator(AutoMinorLocator(4)) # 4 means three minor tick between every major tick
+    ax1.yaxis.set_minor_locator(AutoMinorLocator(4)) # 4 means three minor tick between every major tick
+
+    ax2.xaxis.set_minor_locator(AutoMinorLocator(4)) # 4 means three minor tick between every major tick
+    ax2.yaxis.set_minor_locator(AutoMinorLocator(4)) # 4 means three minor tick between every major tick
+
+    ax3.xaxis.set_minor_locator(AutoMinorLocator(4)) # 4 means three minor tick between every major tick
+    ax3.yaxis.set_minor_locator(AutoMinorLocator(4)) # 4 means three minor tick between every major tick
+
+    ax4.xaxis.set_minor_locator(AutoMinorLocator(4)) # 4 means three minor tick between every major tick
+    ax4.yaxis.set_minor_locator(AutoMinorLocator(4)) # 4 means three minor tick between every major tick
+
 
     ######################################################################
     # Titles
