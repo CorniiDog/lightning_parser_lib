@@ -584,11 +584,11 @@ def create_strike_image(xlma_params: XLMAParams,
     if range_params.time_unit_datetime_range:
         extent = (*range_params.time_unit_datetime_range, *range_params.alt_range)
 
-        ax0.imshow(X=img.to_pil(), extent=extent, origin='lower')
+        ax0.imshow(X=img.to_pil(), extent=extent, origin='upper')
         ax0.set_xlabel(xlma_params.headers[time_unit_datetime])
     else:
         extent = (*range_params.time_range, *range_params.alt_range)
-        ax0.imshow(X=img.to_pil(), extent=extent, origin='lower')
+        ax0.imshow(X=img.to_pil(), extent=extent, origin='upper')
         ax0.set_xlabel(xlma_params.headers[time_unit_datetime])
     ax0.set_ylabel(xlma_params.headers[xlma_params.alt_unit])
 
