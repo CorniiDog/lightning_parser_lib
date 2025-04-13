@@ -900,8 +900,6 @@ def _create_strike_gif_utility(args_list):
         if global_shutdown_event and global_shutdown_event.is_set():
             break
 
-        total_events, frame, num_frames, strike_indeces, strike_stitchings, xlma_params, events, range_params = args
-
         total_events, frame, num_frames, strike_indeces, strike_stitchings, xlma_params, events, range_params, min_time, max_time = args
 
         frame_time_cutoff = min_time + (frame / num_frames) * (max_time - min_time)
