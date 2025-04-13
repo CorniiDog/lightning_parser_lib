@@ -959,7 +959,7 @@ def create_strike_gif(
                     frames += result
         else: #Only use one core, in-line
             for args_list in tqdm(args_list_bucketed, desc="Generating GIF"):
-                frames += _create_strike_gif_utility(args_list_bucketed)
+                frames += _create_strike_gif_utility(args_list)
     except KeyboardInterrupt:
         shutdown_event.set()        
 
