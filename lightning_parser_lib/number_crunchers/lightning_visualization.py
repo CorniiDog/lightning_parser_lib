@@ -941,8 +941,7 @@ def create_strike_image_preview(xlma_params: XLMAParams,
     # Create the Datashader image with a transparent background.
     # The bg_color parameter is set to an 8-digit hex color indicating full transparency.
     img = tf.shade(agg, cmap=colormap, how='linear',
-                   span=(data_min, data_max),
-                   bg_color="#00000000")
+                   span=(data_min, data_max))
     
     # Optionally apply dynamic spreading to enhance visualization.
     img = spread(img, px=xlma_params.max_pixel_size)
