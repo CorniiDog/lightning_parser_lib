@@ -913,7 +913,6 @@ def create_strike_image_preview(xlma_params: XLMAParams,
     Returns:
         Tuple[Image.Image, RangeParams]: A tuple with a PIL Image (the preview) and updated RangeParams.
     """
-    import numpy as np
     # Select the events to preview.
     df = events.iloc[strike_indeces].copy(deep=True)
     
