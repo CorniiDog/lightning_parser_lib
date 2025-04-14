@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lightning_parser_lib"
-version = "0.3.12"
+version = "0.3.13"
 authors = [
   { name="Connor White", email="connor.sw.personal@gmail.com" },
 ]

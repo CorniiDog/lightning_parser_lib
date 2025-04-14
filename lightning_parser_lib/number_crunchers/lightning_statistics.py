@@ -25,8 +25,8 @@ def generate_prestats(events: pd.DataFrame,
 
     Returns:
       Tuple[dict, List[dict]]: A tuple with two elements:
-        - overall_detailed_stats (dict): A dictionary containing aggregated statistics ('distance', 'speed', 'reduced_chi2', 'power', 'power_db') across all buckets.
-        - bucketed_stats (List[dict]): A list of dictionaries, each containing detailed statistics for a specific bucket.
+        - overall_prestats (dict): A dictionary containing aggregated statistics ('distance', 'speed', 'reduced_chi2', 'power', 'power_db') across all buckets.
+        - bucketed_prestats (List[dict]): A list of dictionaries, each containing detailed statistics for a specific bucket.
     """
     
     stats_template = {
@@ -37,10 +37,10 @@ def generate_prestats(events: pd.DataFrame,
       "power_db": []
     }
 
-    overall_detailed_stats = copy.deepcopy(stats_template)
-    bucketed_stats = []
+    overall_prestats = copy.deepcopy(stats_template)
+    bucketed_prestats = []
     for i, strikes_indices in enumerate(bucketed_strikes_indices):
-        detailed_stats = copy.deepcopy(stats_template)
+        prestats = copy.deepcopy(stats_template)
 
         strike_correlations = bucketed_lightning_correlations[i]
 
@@ -60,23 +60,23 @@ def generate_prestats(events: pd.DataFrame,
 
             speed = distance/dt
 
-            detailed_stats["speed"].append(speed)
-            detailed_stats["distance"].append(distance)
-            overall_detailed_stats["speed"].append(speed)
-            overall_detailed_stats["distance"].append(distance)
+            prestats["speed"].append(speed)
+            prestats["distance"].append(distance)
+            overall_prestats["speed"].append(speed)
+            overall_prestats["distance"].append(distance)
 
         events_in_bucket = events.iloc[strikes_indices]
 
-        detailed_stats["reduced_chi2"] += events_in_bucket["reduced_chi2"].values.tolist()
-        detailed_stats["power"] += events_in_bucket["power"].values.tolist()
-        detailed_stats["power_db"] += events_in_bucket["power_db"].values.tolist()
-        overall_detailed_stats["reduced_chi2"] += events_in_bucket["reduced_chi2"].values.tolist()
-        overall_detailed_stats["power"] += events_in_bucket["power"].values.tolist()
-        overall_detailed_stats["power_db"] += events_in_bucket["power_db"].values.tolist()
+        prestats["reduced_chi2"] += events_in_bucket["reduced_chi2"].values.tolist()
+        prestats["power"] += events_in_bucket["power"].values.tolist()
+        prestats["power_db"] += events_in_bucket["power_db"].values.tolist()
+        overall_prestats["reduced_chi2"] += events_in_bucket["reduced_chi2"].values.tolist()
+        overall_prestats["power"] += events_in_bucket["power"].values.tolist()
+        overall_prestats["power_db"] += events_in_bucket["power_db"].values.tolist()
 
-        bucketed_stats.append(detailed_stats)
+        bucketed_prestats.append(prestats)
 
-    return overall_detailed_stats, bucketed_stats
+    return overall_prestats, bucketed_prestats
 
 
 def compute_detailed_stats(overall_detailed_stats: dict) -> dict:
