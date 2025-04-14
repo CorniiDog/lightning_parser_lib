@@ -894,6 +894,65 @@ def create_strike_image(xlma_params: XLMAParams,
 
     return cropped_img, range_params
 
+def create_strike_image_preview(xlma_params: XLMAParams,
+                                events: pd.DataFrame,
+                                strike_indeces: List[int],
+                                range_params: Optional[RangeParams] = None
+                               ) -> Tuple[Image.Image, RangeParams]:
+    """
+    Creates a preview image of lightning strikes using only the x and y axes (e.g. longitude and latitude)
+    with a transparent background.
+
+    Parameters:
+        xlma_params (XLMAParams): Visualization parameters containing x_unit, y_unit, buffer_extension,
+                                  points_resolution_multiplier, max_pixel_size, and colormap_scheme.
+        events (pd.DataFrame): DataFrame containing lightning event data.
+        strike_indeces (List[int]): List of indices to use for the preview.
+        range_params (Optional[RangeParams]): Existing range parameters; if None, x_range and y_range are computed.
+
+    Returns:
+        Tuple[Image.Image, RangeParams]: A tuple with a PIL Image (the preview) and updated RangeParams.
+    """
+    import numpy as np
+    # Select the events to preview.
+    df = events.iloc[strike_indeces].copy(deep=True)
+    
+    # Compute x and y ranges if not provided.
+    if range_params is None:
+        range_params = RangeParams()
+        range_params.x_range = range_bufferize(df[xlma_params.x_unit], xlma_params.buffer_extension)
+        range_params.y_range = range_bufferize(df[xlma_params.y_unit], xlma_params.buffer_extension)
+    
+    # Convert Matplotlib colormap to hex colors for Datashader.
+    colormap = colormap_to_hex(xlma_params.colormap_scheme)
+    
+    # Create a canvas using the x and y ranges.
+    cvs = ds.Canvas(plot_width=200 * xlma_params.points_resolution_multiplier,
+                    plot_height=200 * xlma_params.points_resolution_multiplier,
+                    x_range=range_params.x_range,
+                    y_range=range_params.y_range)
+    
+    # Aggregate using a count of events.
+    agg = cvs.points(df, xlma_params.x_unit, xlma_params.y_unit, agg=ds.count())
+    
+    # Compute the span for shading.
+    data_min = float(np.nanmin(agg.data))
+    data_max = float(np.nanmax(agg.data))
+    
+    # Create the Datashader image with a transparent background.
+    # The bg_color parameter is set to an 8-digit hex color indicating full transparency.
+    img = tf.shade(agg, cmap=colormap, how='linear',
+                   span=(data_min, data_max),
+                   bg_color="#00000000")
+    
+    # Optionally apply dynamic spreading to enhance visualization.
+    img = spread(img, px=xlma_params.max_pixel_size)
+    
+    # Convert the Datashader image to a PIL Image.
+    preview_img = img.to_pil()
+    return preview_img, range_params
+
+
 def _create_strike_gif_utility(args_list):
     frames = []
     for args in args_list:
