@@ -113,7 +113,7 @@ def remove_lylout_file(config: LightningConfig, filename: str) -> bool:
     full_path = os.path.join(config.lightning_data_folder, filename)
 
     if not os.path.exists(full_path):
-        raise FileExistsError(f"File does not exist: {filename}")
+        raise FileNotFoundError(f"File does not exist: {filename}")
     
     os.remove(full_path)
     return True
@@ -148,6 +148,9 @@ def upload_lylout_file(config: LightningConfig, filename: str, contents: str) ->
         raise BufferError("The contents of the file must be mostly text.")
     
     full_path = os.path.join(config.lightning_data_folder, filename)
+
+    if os.path.exists(full_path):
+        raise FileExistsError(f"File already exists: {filename}")
 
     with open(full_path, "w") as f:
         f.write(contents)
