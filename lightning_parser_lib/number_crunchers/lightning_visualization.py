@@ -931,8 +931,13 @@ def create_strike_image_preview(xlma_params: XLMAParams,
                     x_range=range_params.x_range,
                     y_range=range_params.y_range)
     
+    color_unit_specific = xlma_params.color_unit + "_cu"
+    df[color_unit_specific] = df[xlma_params.color_unit]
+    if ((xlma_params.color_unit == xlma_params.time_unit and xlma_params.zero_time_unit_if_color_unit) or xlma_params.zero_colorbar) and len(df) > 0:
+        df[color_unit_specific] -= df[xlma_params.color_unit].iloc[0]
+
     # Aggregate using a count of events.
-    agg = cvs.points(df, xlma_params.x_unit, xlma_params.y_unit, agg=ds.count())
+    agg = cvs.points(df, xlma_params.x_unit, xlma_params.y_unit, agg=ds.mean(color_unit_specific))
     
     # Compute the span for shading.
     data_min = float(np.nanmin(agg.data))
