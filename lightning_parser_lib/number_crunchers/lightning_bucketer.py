@@ -351,8 +351,9 @@ def bucket_dataframe_lightnings(
         cached_data = _get_result_cache(df, params)
         if cached_data is not None:
             filtered_groups, bucketed_correlations, time_saved = cached_data
-            tprint("Using cached result from earlier")
-            return filtered_groups, bucketed_correlations
+            if not (not filtered_groups or not bucketed_correlations or not time_saved):
+                tprint("Using cached result from earlier")
+                return filtered_groups, bucketed_correlations
 
     raw_groups = _bucket_dataframe_lightnings(
         df,
