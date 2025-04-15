@@ -200,8 +200,7 @@ def _cache_and_parse(config: LightningConfig):
     
     files = os.listdir(config.lightning_data_folder)
     if not files:
-        tprint(f"Please put lightning LYLOUT files in the directory '{config.lightning_data_folder}'")
-        exit()
+        raise FileNotFoundError(f"Please put lightning LYLOUT files in the directory '{config.lightning_data_folder}'")
 
     # Parse and cache data into the SQLite database.
     database_parser.cache_and_parse_database(config.cache_dir,
@@ -307,8 +306,7 @@ def _bucket_dataframe_lightnings(events, config: LightningConfig, params):
 
     bucketed_strikes_indices, bucketed_lightning_correlations = lightning_bucketer.bucket_dataframe_lightnings(events, params)
     if not bucketed_strikes_indices:
-        tprint("Data too restrained.")
-        exit()
+        raise ArithmeticError("Data too restrained.")
     tprint("Created buckets of nodes that resemble a lightning strike")
     return bucketed_strikes_indices, bucketed_lightning_correlations
 
