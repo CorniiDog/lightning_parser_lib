@@ -257,7 +257,7 @@ def get_events(filters, config: LightningConfig) -> pd.DataFrame:
 
     events = database_parser.query_events_as_dataframe(filters, config.db_path)
     if events.empty:
-        tprint("Data too restrained")
+        tprint("Filters too restrained")
     return events
 
 @rf.as_remote()
@@ -289,7 +289,7 @@ def get_events_and_bucket_dataframe_lightnings(filters, config: LightningConfig,
     
     bucketed_strikes_indices, bucketed_lightning_correlations = None, None
     if events.empty:
-        tprint("Data too restrained")
+        tprint("Stitching parameters too restrained.")
     else:
         bucketed_strikes_indices, bucketed_lightning_correlations = _bucket_dataframe_lightnings(events=events, config=config, params=params)
 
@@ -306,7 +306,7 @@ def _bucket_dataframe_lightnings(events, config: LightningConfig, params):
 
     bucketed_strikes_indices, bucketed_lightning_correlations = lightning_bucketer.bucket_dataframe_lightnings(events, params)
     if not bucketed_strikes_indices:
-        raise ArithmeticError("Data too restrained.")
+        raise ArithmeticError("Stitching parameters too restrained.")
     tprint("Created buckets of nodes that resemble a lightning strike")
     return bucketed_strikes_indices, bucketed_lightning_correlations
 
