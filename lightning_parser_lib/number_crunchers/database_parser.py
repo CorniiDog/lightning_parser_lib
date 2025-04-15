@@ -8,6 +8,7 @@ import traceback
 from .toolbox import tprint
 from . import logger 
 from . import toolbox
+from typing import List, Tuple, Any
 
 def get_dat_files_paths(lightning_data_folder, data_extension):
     """
@@ -194,6 +195,27 @@ def _build_where_clause(filters):
     clause = f"WHERE {' AND '.join(conditions)}" if conditions else ""
     return clause, params
 
+def query_events_by_time(start_time, end_time, additional_filters=None, DB_PATH="lylout_db.db"):
+    """
+    Query the 'events' table in the database using specified filter conditions.
+
+    Parameters:
+      filters (dict or list): Filter conditions to apply for querying.
+      DB_PATH (str): Path to the SQLite database file. Defaults to "lylout_db.db".
+
+    Returns:
+      list: A list of sqlite3.Row objects representing the query results.
+    """
+    query = "SELECT * FROM events WHERE time_unix BETWEEN ? AND ?"
+    params = [start_time, end_time]
+
+    if additional_filters:
+        clause, extra_params = _build_where_clause(additional_filters)
+        if clause:
+            query += f" AND {clause[6:]}"  # remove initial WHERE from clause
+            params += extra_params
+
+    return _executesql(query, params, DB_PATH)
 
 def query_events(filters, DB_PATH="lylout_db.db"):
     """
@@ -211,7 +233,7 @@ def query_events(filters, DB_PATH="lylout_db.db"):
     return _executesql(query, params, DB_PATH)
 
 
-def query_events_as_dataframe(filters, DB_PATH="lylout_db.db"):
+def query_events_as_dataframe(filters: List[Tuple[str, str, Any]], DB_PATH="lylout_db.db"):
     """
     Query the 'events' table and return the results as a pandas DataFrame.
 
@@ -222,7 +244,29 @@ def query_events_as_dataframe(filters, DB_PATH="lylout_db.db"):
     Returns:
       pandas.DataFrame: DataFrame containing the query results.
     """
-    results = query_events(filters, DB_PATH)  # Get results as a list of sqlite3.Row
+    time_filters = []
+    non_time_filters = []
+    for filt in filters:
+        if filt[0] == 'time_unix':
+            time_filters.append(filt)
+        else:
+            non_time_filters.append(filt)
+
+    start_time = None
+    end_time = None
+    for filt in time_filters:
+        op = filt[1]
+        val = filt[2]
+        if op in ['>=', '>']:
+            if start_time is None or val < start_time:
+                start_time = val
+        elif op in ['<=', '<']:
+            if end_time is None or val > end_time:
+                end_time = val
+    if start_time and end_time:
+        results = query_events_by_time(start_time, end_time, filters, DB_PATH)  # Get results as a list of sqlite3.Row
+    else:
+        results = query_events(filters, DB_PATH)  # Get results as a list of sqlite3.Row
     df = pd.DataFrame(results, columns=get_headers(DB_PATH))  # Convert to DataFrame
     return df
 
