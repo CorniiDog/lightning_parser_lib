@@ -214,6 +214,7 @@ def query_events_by_time(start_time, end_time, additional_filters=None, DB_PATH=
         if clause:
             query += f" AND {clause[6:]}"  # remove initial WHERE from clause
             params += extra_params
+    query += " ORDER BY time_unix ASC"  # Use DESC for descending order if needed
 
     return _executesql(query, params, DB_PATH)
 
@@ -230,6 +231,7 @@ def query_events(filters, DB_PATH="lylout_db.db"):
     """
     where_clause, params = _build_where_clause(filters)
     query = f"SELECT * FROM events {where_clause}"
+    query += " ORDER BY time_unix ASC"  # Use DESC for descending order if needed
     return _executesql(query, params, DB_PATH)
 
 
