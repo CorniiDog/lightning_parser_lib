@@ -271,9 +271,10 @@ def _get_result_cache(
     if os.path.exists(RESULT_CACHE_FILE):
         try:
             with open(RESULT_CACHE_FILE, "rb") as f:
-                cache = pkl.load(f)
-            if key in cache:
-                filtered_groups, bucketed_correlations, time_saved = cache[key]
+                cache: dict = pkl.load(f)
+
+            for key, result in cache.items():
+                _, _, time_saved = result
                 now = datetime.datetime.now(tz=datetime.timezone.utc)
                 if now - time_saved > datetime.timedelta(days=max_cache_life_days):
                     tprint("Cached result expired. Removing outdated cache entry.")
@@ -281,17 +282,17 @@ def _get_result_cache(
                     del cache[key]
                     with open(RESULT_CACHE_FILE, "wb") as f:
                         pkl.dump(cache, f)
-                    return None
-                else:
-                    tprint("Cache hit.")
-                    return cache[key]
+            
+            if key in cache:
+                tprint("Cache hit.")
+                return cache[key]
         except Exception as e:
             tprint(f"Cache load error: {e}")
-    return None
+    return None, None, None
 
 
 def save_result_cache(
-    df: pd.DataFrame, params: dict, result: Tuple[List[List[int]], List[Tuple[int, int]]]
+    df: pd.DataFrame, params: dict, result: Tuple[List[List[int]], List[Tuple[int, int], datetime.datetime]]
 ) -> None:
     """
     Save the bucketing result in the cache with the computed key.
