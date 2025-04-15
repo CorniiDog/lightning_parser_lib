@@ -292,7 +292,7 @@ def _get_result_cache(
 
 
 def save_result_cache(
-    df: pd.DataFrame, params: dict, result: Tuple[List[List[int]], List[Tuple[int, int], datetime.datetime]]
+    df: pd.DataFrame, params: dict, result: Tuple[List[List[int]], List[Tuple[int, int]], datetime.datetime]
 ) -> None:
     """
     Save the bucketing result in the cache with the computed key.
