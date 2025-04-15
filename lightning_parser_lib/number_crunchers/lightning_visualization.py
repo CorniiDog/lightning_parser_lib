@@ -926,8 +926,8 @@ def create_strike_image_preview(xlma_params: XLMAParams,
     colormap = colormap_to_hex(xlma_params.colormap_scheme)
     
     # Create a canvas using the x and y ranges.
-    cvs = ds.Canvas(plot_width=200 * xlma_params.points_resolution_multiplier,
-                    plot_height=200 * xlma_params.points_resolution_multiplier,
+    cvs = ds.Canvas(plot_width=100 * xlma_params.points_resolution_multiplier,
+                    plot_height=100 * xlma_params.points_resolution_multiplier,
                     x_range=range_params.x_range,
                     y_range=range_params.y_range)
     
