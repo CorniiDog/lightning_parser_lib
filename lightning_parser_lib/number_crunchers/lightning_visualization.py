@@ -300,7 +300,7 @@ class XLMAParams:
             num_pts_unit: str = 'num_pts',
             alt_group_unit: str = "alt_group",
             dpi: int = 300,
-            title: str = "LYLOUT LMA",
+            title: str = "PyXLMA LYLOUT",
             figure_size: Tuple[int, int] = (7, 7),
             cartopy_paths: List[str] = None,
             tiger_path: str = None,
