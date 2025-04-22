@@ -195,6 +195,26 @@ def _build_where_clause(filters):
     clause = f"WHERE {' AND '.join(conditions)}" if conditions else ""
     return clause, params
 
+def remove_from_database_with_file_name(file_name: str, DB_PATH: str = "lylout_db.db") -> int:
+    """
+    Delete all records from the 'events' table matching the given file_name.
+
+    Parameters:
+      file_name (str): The name of the file whose events should be removed.
+      DB_PATH (str): Path to the SQLite database file. Defaults to "lylout_db.db".
+
+    Returns:
+      int: Number of rows deleted.
+    """
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM events WHERE file_name = ?", (file_name,))
+    deleted_count = cursor.rowcount
+    conn.commit()
+    conn.close()
+    return deleted_count
+
+
 def query_events_by_time(start_time, end_time, additional_filters=None, DB_PATH="lylout_db.db"):
     """
     Query the 'events' table in the database using specified filter conditions.

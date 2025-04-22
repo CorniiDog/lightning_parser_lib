@@ -7,6 +7,7 @@ from .database_parser import (
     query_events,
     query_events_as_dataframe,
     get_headers,
+    remove_from_database_with_file_name,
 )
 from .lightning_bucketer import (
     bucket_dataframe_lightnings,
@@ -81,6 +82,7 @@ __all__ = [
     "query_events",
     "query_events_as_dataframe",
     "get_headers",
+    "remove_from_database_with_file_name",
     # lightning_bucketer
     "bucket_dataframe_lightnings",
     "export_as_csv",
