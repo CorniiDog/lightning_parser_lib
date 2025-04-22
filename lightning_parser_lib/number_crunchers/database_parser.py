@@ -212,10 +212,13 @@ def remove_from_database_with_file_name(file_name: str, lightning_data_folder: s
     deleted_count = cursor.rowcount
     conn.commit()
     conn.close()
-    os.remove(CACHE_PATH)
-
-    full_log_path = os.path.join(lightning_data_folder, file_name)
-    logger.remove_log(full_log_path) # Remove
+    if os.path.exists(CACHE_PATH):
+        os.remove(CACHE_PATH)
+    
+    if os.path.exists(lightning_data_folder):
+        full_log_path = os.path.join(lightning_data_folder, file_name)
+        if os.path.exists(full_log_path):
+            logger.remove_log(full_log_path) # Remove
     return deleted_count
 
 
