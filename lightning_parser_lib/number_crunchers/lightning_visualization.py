@@ -305,6 +305,7 @@ class XLMAParams:
             cartopy_paths: List[str] = None,
             tiger_path: str = None,
             county_line_alpha=0.1,
+            county_spacing=0.3,
             county_line_width=1,
             county_text_font_size=3,
             county_text_color='lime',
@@ -343,6 +344,7 @@ class XLMAParams:
             cartopy_paths (List[str]): List of file paths to geographical boundary shapefiles (e.g., counties, cities) for overlaying on the plot.
             tiger_path (str): File path to TIGER/Line shapefiles used for detailed geographical features.
             county_line_alpha (float): Transparency level for drawn county boundary lines.
+            county_spacing (float): Spacing, in coordinate degrees (lat,lon), to show counties. Counties that overlap such spacing are omitted.
             county_line_width (float): Line width used when rendering county boundaries.
             county_text_font_size (int): Font size for county name labels on the map.
             county_text_color (str): Color for county name annotations; can be a hex code (e.g., "#39FF14" for neon green) or a named color.
@@ -379,6 +381,7 @@ class XLMAParams:
         self.cartopy_paths = cartopy_paths
         self.tiger_path = tiger_path
         self.county_line_alpha=county_line_alpha
+        self.county_spacing = county_spacing
         self.county_line_width=county_line_width
         self.county_text_font_size=county_text_font_size
         self.county_text_color=county_text_color
@@ -705,6 +708,8 @@ def create_strike_image(xlma_params: XLMAParams,
                 continue
 
             counties_in_box.boundary.plot(ax=ax3, edgecolor=marker_color, linewidth=xlma_params.county_line_width, zorder=2, alpha=xlma_params.county_line_alpha)
+
+            spacings = {}
             # Add county name labels
             for _, row in counties_in_box.iterrows():
                 centroid = row.geometry.centroid
@@ -715,6 +720,14 @@ def create_strike_image(xlma_params: XLMAParams,
                 in_x_bounds = range_params.x_range[1] - x_buffer_size > centroid.x > range_params.x_range[0] + x_buffer_size
                 in_y_bounds = range_params.y_range[1] - y_buffer_size > centroid.y > range_params.y_range[0] + y_buffer_size
                 if not in_x_bounds or not in_y_bounds:
+                    continue
+
+                spacing_unit = xlma_params.county_spacing
+                spacing_group = f"{centroid.x//spacing_unit}, {centroid.y//spacing_unit}"
+
+                if spacing_group not in spacings.keys():
+                    spacings[spacing_group] = True
+                else:
                     continue
 
                 ax3.text(centroid.x, centroid.y, row['NAME'], ha='center', color=xlma_params.county_text_color, fontsize=xlma_params.county_text_font_size, alpha=xlma_params.county_text_alpha)

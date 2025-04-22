@@ -375,7 +375,9 @@ def delete_sql_database(config: LightningConfig):
         if hex_property.result in [QueueStatus.RETURNED_CLEAN, QueueStatus.RETURNED_ERROR, QueueStatus.STOPPED]:
             unique_hex = hex_property.unique_hex
             rf.qs.clear_hex(unique_hex)
-    shutil.rmtree(config.cache_dir)
+
+    if os.path.exists(config.cache_dir):
+        shutil.rmtree(config.cache_dir)
 
 
 @rf.as_remote()
