@@ -116,7 +116,7 @@ def remove_lylout_file(config: LightningConfig, filename: str) -> bool:
         raise FileNotFoundError(f"File does not exist: {filename}")
     
     os.remove(full_path)
-    database_parser.remove_from_database_with_file_name(filename, config.db_path, config.db_path, config.cache_path)
+    database_parser.remove_from_database_with_file_name(filename, config.lightning_data_folder, config.db_path, config.cache_path)
     return True
 
 @rf.as_remote()
