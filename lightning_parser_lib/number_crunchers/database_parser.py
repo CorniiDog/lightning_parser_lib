@@ -195,7 +195,7 @@ def _build_where_clause(filters):
     clause = f"WHERE {' AND '.join(conditions)}" if conditions else ""
     return clause, params
 
-def remove_from_database_with_file_name(file_name: str, DB_PATH: str = "lylout_db.db") -> int:
+def remove_from_database_with_file_name(file_name: str, lightning_data_folder: str, DB_PATH: str = "lylout_db.db", CACHE_PATH: str = "os_cache.pkl") -> int:
     """
     Delete all records from the 'events' table matching the given file_name.
 
@@ -212,6 +212,10 @@ def remove_from_database_with_file_name(file_name: str, DB_PATH: str = "lylout_d
     deleted_count = cursor.rowcount
     conn.commit()
     conn.close()
+    os.remove(os.path.join(lightning_data_folder, CACHE_PATH))
+
+    full_log_path = os.path.join(lightning_data_folder, file_name)
+    logger.remove_log(full_log_path) # Remove
     return deleted_count
 
 

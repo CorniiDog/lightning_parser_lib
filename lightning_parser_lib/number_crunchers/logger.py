@@ -38,6 +38,26 @@ def _load_log():
             return json.load(f)
     return {}
 
+def remove_log(log_key: str):
+    """
+    Removes the log from the JSON log file.
+
+    Parameters:
+      log_key (str): The key that corresponds to the dictionary
+
+    Returns:
+      None
+    """
+    if os.path.exists(LOG_FILE):
+      with open(LOG_FILE, "r") as f:
+        log_data: dict = json.load(f)
+
+      if log_key in log_data.keys():
+          del log_data[log_key]
+
+      with open(LOG_FILE, "w") as f:
+        json.dump(log_data, f, indent=4)
+    
 
 def _save_log(log_data):
     """

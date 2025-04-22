@@ -30,7 +30,12 @@ from .lightning_stitcher import (
     stitch_lightning_strike,
     filter_correlations_by_chain_size,
 )
-from .logger import is_logged, log_file, LOG_FILE
+from .logger import (
+  is_logged, 
+  log_file, 
+  LOG_FILE, 
+  remove_log,
+)
 from .toolbox import (
     tprint,
     zig_zag_range,
@@ -105,6 +110,7 @@ __all__ = [
     "is_logged",
     "log_file",
     "LOG_FILE",
+    "remove_log",
     # toolbox
     "tprint",
     "zig_zag_range",
