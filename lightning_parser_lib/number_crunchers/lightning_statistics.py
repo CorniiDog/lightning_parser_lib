@@ -45,6 +45,8 @@ def generate_prestats(events: pd.DataFrame,
         strike_correlations = bucketed_lightning_correlations[i]
 
         for correlation in strike_correlations:
+            if max(correlation[0], correlation[1]) >= len(events):
+                continue
             correlation_sub_df = events.iloc[[correlation[0], correlation[1]]]
 
             x_values = correlation_sub_df['x'].values
