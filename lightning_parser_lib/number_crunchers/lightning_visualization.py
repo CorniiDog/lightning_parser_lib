@@ -310,7 +310,11 @@ class XLMAParams:
             county_text_font_size=3,
             county_text_color='lime',
             county_text_alpha=1,
-            headers: Dict[str, str] = None):
+            headers: Dict[str, str] = None,
+            additional_overlap_left: int = 0,
+            additional_overlap_right: int = 0,
+            additional_overlap_up: int = 0,
+            additional_overlap_down: int = 0):
         """
         Initialize the XLMAParams instance with visualization parameters.
 
@@ -350,6 +354,10 @@ class XLMAParams:
             county_text_color (str): Color for county name annotations; can be a hex code (e.g., "#39FF14" for neon green) or a named color.
             county_text_alpha (float): The alpha for showing text
             headers (Dict[str, str]): Dictionary mapping data column names to human-readable header labels for axes and legends.
+            additional_overlap_left (int): Additional overlap negation in pixels (increase if text is cut-off)
+            additional_overlap_right (int): Additional overlap negation in pixels (increase if text is cut-off)
+            additional_overlap_up (int): Additional overlap negation in pixels (increase if text is cut-off)
+            additional_overlap_down (int): Additional overlap negation in pixels (increase if text is cut-off)
         """
 
         self.time_as_datetime = time_as_datetime
@@ -386,6 +394,10 @@ class XLMAParams:
         self.county_text_font_size=county_text_font_size
         self.county_text_color=county_text_color
         self.county_text_alpha = county_text_alpha
+        self.additional_overlap_left = additional_overlap_left
+        self.additional_overlap_right = additional_overlap_right
+        self.additional_overlap_up = additional_overlap_up
+        self.additional_overlap_down = additional_overlap_down
         
         # Default headers
         self.headers = {
@@ -901,6 +913,13 @@ def create_strike_image(xlma_params: XLMAParams,
     top = 50
     right = width - 50
     bottom = height - 100
+
+    # Apply additional_overlap to “negate”/expand the crop
+    # ensure we don’t go outside the image
+    left   = max(left   - xlma_params.additional_overlap_left,   0)
+    top    = max(top    - xlma_params.additional_overlap_up,     0)
+    right  = min(right  + xlma_params.additional_overlap_right,  width)
+    bottom = min(bottom + xlma_params.additional_overlap_down,   height)
 
     # Crop the image (box format: left, top, right, bottom)
     cropped_img = img.crop((left, top, right, bottom))
