@@ -64,7 +64,7 @@ from . import toolbox
 from matplotlib.figure import Figure
 from matplotlib.colorbar import Colorbar
 from collections.abc import Callable
-from lightning_parser_overlays.core import FigureDetails, ColorbarDetails, Overlay
+from lightning_parser_overlays.core import FigureDetails, ColorbarDetails, Overlay, RangeParams, FigBaseDimensions
 
 
 def main():
@@ -265,76 +265,6 @@ def range_bufferize(list_items: list[float], l_buffer_extension: float) -> Tuple
 ######################################################################
 # Parameters
 ######################################################################
-class FigBaseDimensions:
-    """
-    Container for storing the dimensions in pixels of the given frame
-    """
-    def __init__(self,
-                 x_y_width: int = 200,
-                 x_y_height: int = 200,
-                 x_alt_height: int = 50,
-                 alt_y_width: int = 50,
-                 time_alt_width: int = 295,
-                 time_alt_height: int = 50):
-        self.x_y_width = x_y_width
-        self.x_y_height = x_y_height
-        self.x_alt_height = x_alt_height
-        self.x_alt_width= x_y_width # because together
-        self.alt_y_width = alt_y_width
-        self.alt_y_height = x_y_height # because together
-        self.time_alt_width = time_alt_width
-        self.time_alt_height = time_alt_height
-        
-
-class RangeParams:
-    """
-    Container for numerical ranges used in visualization axis limits and normalization.
-
-    This class encapsulates the various buffered numerical ranges (e.g., time, altitude,
-    spatial coordinates, and colorbar values) that are computed and applied to plotting axes
-    for consistent scaling and presentation.
-
-    Attributes:
-        time_unit_range (tuple or list, optional): The buffered range for the time unit values.
-        time_unit_datetime_range (tuple or list, optional): The buffered range as datetime values.
-        time_range (tuple or list, optional): The raw range of time values.
-        alt_range (tuple or list, optional): The buffered range of altitude values.
-        x_range (tuple or list, optional): The buffered range of x-coordinate values (e.g., longitude).
-        y_range (tuple or list, optional): The buffered range of y-coordinate values (e.g., latitude).
-        num_pts_range (tuple or list, optional): The buffered range for the number of points (used in aggregation).
-        colorbar_range (tuple or list, optional): The range of values used for colorbar normalization.
-    """
-
-    def __init__(self,
-                 time_unit_range=None,
-                 time_unit_datetime_range=None,
-                 time_range=None,
-                 alt_range=None,
-                 x_range=None,
-                 y_range=None,
-                 num_pts_range=None,
-                 colorbar_range=None):
-        """
-        Initialize a new instance of the RangeParams class.
-
-        Parameters:
-            time_unit_range (tuple or list, optional): The buffered range for the time unit values. Defaults to None.
-            time_unit_datetime_range (tuple or list, optional): The buffered range as datetime values. Defaults to None.
-            time_range (tuple or list, optional): The raw range of time values. Defaults to None.
-            alt_range (tuple or list, optional): The buffered range of altitude values. Defaults to None.
-            x_range (tuple or list, optional): The buffered range of x-coordinate values (e.g., longitude). Defaults to None.
-            y_range (tuple or list, optional): The buffered range of y-coordinate values (e.g., latitude). Defaults to None.
-            num_pts_range (tuple or list, optional): The buffered range for the number of points (used in aggregation). Defaults to None.
-            colorbar_range (tuple or list, optional): The range of values used for colorbar normalization. Defaults to None.
-        """
-        self.time_unit_range = time_unit_range
-        self.time_unit_datetime_range = time_unit_datetime_range
-        self.time_range = time_range
-        self.alt_range = alt_range
-        self.x_range = x_range
-        self.y_range = y_range
-        self.num_pts_range = num_pts_range
-        self.colorbar_range = colorbar_range
 
 class XLMAParams:
     """
@@ -557,7 +487,14 @@ def create_strike_image(xlma_params: XLMAParams,
     description = f"{start_time_str}"
 
     # To establish the base dimensions of the plot to keep things organized
-    base_dimensions = FigBaseDimensions()
+    base_dimensions = FigBaseDimensions(
+        x_y_width=200,
+        x_y_height=200,
+        x_alt_height=50,
+        alt_y_width=50,
+        time_alt_width=295,
+        time_alt_height=50
+    )
 
     ######################################################################
     # Initialization and config adjustment
