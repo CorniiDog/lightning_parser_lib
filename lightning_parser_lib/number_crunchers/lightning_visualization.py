@@ -61,6 +61,11 @@ import re
 import os
 import multiprocessing
 from . import toolbox
+from matplotlib.figure import Figure
+from matplotlib.colorbar import Colorbar
+from collections.abc import Callable
+
+
 
 def main():
     """
@@ -257,6 +262,50 @@ def range_bufferize(list_items: list[float], l_buffer_extension: float) -> Tuple
     l_buffer_size = max(abs(l_max - l_min), 0.2) * l_buffer_extension
     return (l_min - l_buffer_size, l_max + l_buffer_size)
 
+
+class FigureDetails:
+    def __init__(self, 
+                 fig: Figure,
+                 uses_lat: bool = True,
+                 uses_lon: bool = True,
+                 uses_alt: bool = False):
+        # exactly two of the three must be True
+        if (int(uses_lat) + int(uses_lon) + int(uses_alt)) != 2:
+            raise ValueError("Each FigureDetails must use exactly two of {lat, lon, alt}.")
+        self.fig = fig
+        self.uses_lat = uses_lat
+        self.uses_lon = uses_lon
+        self.uses_alt = uses_alt
+
+class ColorbarDetails:
+    def __init__(self, colorbar: Colorbar):
+        self.colorbar = colorbar
+
+class Overlay:
+    """
+    Overlay Object That Provides Necessary Information For Adding More Graphs.
+    Each contained FigureDetails must use exactly two of {lat, lon, alt}.
+    """
+    def __init__(self,
+                 overlay_name: str,
+                 figures: List[FigureDetails],
+                 colorbar_name: Optional[str] = None,
+                 colorbar_details: Optional[ColorbarDetails] = None):
+        if not figures:
+            raise ValueError("Overlay requires at least one FigureDetails.")
+        for fd in figures:
+            # already validated in FigureDetails, but double-check for safety
+            if (int(fd.uses_lat) + int(fd.uses_lon) + int(fd.uses_alt)) != 2:
+                raise ValueError(f"{overlay_name}: each FigureDetails must be lat/lon, lat/alt, or lon/alt.")
+        if (colorbar_name is None) ^ (colorbar_details is None):
+            raise ValueError("colorbar_name and colorbar_details must be both provided or both None.")
+
+        self.overlay_name = overlay_name
+        self.figures = figures     
+        self.colorbar_name = colorbar_name
+        self.colorbar_details = colorbar_details
+
+
 ######################################################################
 # Parameters
 ######################################################################
@@ -300,7 +349,7 @@ class XLMAParams:
             num_pts_unit: str = 'num_pts',
             alt_group_unit: str = "alt_group",
             dpi: int = 300,
-            title: str = "StitchXLMA LYLOUT",
+            title: str = "PyXLMA LYLOUT",
             figure_size: Tuple[int, int] = (7, 7),
             cartopy_paths: List[str] = None,
             tiger_path: str = None,
@@ -314,7 +363,9 @@ class XLMAParams:
             additional_overlap_left: int = 0,
             additional_overlap_right: int = 0,
             additional_overlap_up: int = 0,
-            additional_overlap_down: int = 0):
+            additional_overlap_down: int = 0,
+            twod_overlay_function: Callable[[float, float, float, float, float, float], List[Overlay]] = None):
+            
         """
         Initialize the XLMAParams instance with visualization parameters.
 
@@ -358,6 +409,21 @@ class XLMAParams:
             additional_overlap_right (int): Additional overlap negation in pixels (increase if text is cut-off)
             additional_overlap_up (int): Additional overlap negation in pixels (increase if text is cut-off)
             additional_overlap_down (int): Additional overlap negation in pixels (increase if text is cut-off)
+            twod_overlay_function (Callable[[float, float, float, float, float, float], List[Overlay]]): 
+            A user-supplied function that defines how additional 2D overlays are generated 
+                within a spatial bounding box. The callable receives six float arguments:
+
+                    lat_min (float): Minimum latitude of the bounding box.
+                    lat_max (float): Maximum latitude of the bounding box.
+                    lon_min (float): Minimum longitude of the bounding box.
+                    lon_max (float): Maximum longitude of the bounding box.
+                    alt_min (float): Minimum altitude of the bounding box.
+                    alt_max (float): Maximum altitude of the bounding box.
+
+                The function must return a list of `Overlay` objects (or equivalent figures) 
+                that will be drawn on top of the visualization. This allows integration of 
+                external spatial features (e.g., geographic polygons, sensor ranges, or 
+                altitude-constrained annotations) that align with the specified 3D bounding box.
         """
 
         self.time_as_datetime = time_as_datetime
@@ -398,6 +464,7 @@ class XLMAParams:
         self.additional_overlap_right = additional_overlap_right
         self.additional_overlap_up = additional_overlap_up
         self.additional_overlap_down = additional_overlap_down
+        self.twod_overlay_function = twod_overlay_function
         
         # Default headers
         self.headers = {
@@ -552,13 +619,16 @@ def create_strike_image(xlma_params: XLMAParams,
     ax3.sharey(ax4)
 
     ######################################################################
-    # Colorbar
+    # Main Colorbar Preparation
     ######################################################################
     color_unit_specific = xlma_params.color_unit + "_cu"
     df[color_unit_specific] = df[xlma_params.color_unit]
     if ((xlma_params.color_unit == xlma_params.time_unit and xlma_params.zero_time_unit_if_color_unit) or xlma_params.zero_colorbar) and len(df) > 0:
         df[color_unit_specific] -= df[xlma_params.color_unit].iloc[0]
     
+    ######################################################################
+    # Lat/Lon/etc. Range Object
+    ######################################################################
     if not range_params:
         range_params = RangeParams()
         range_params.time_unit_range = range_bufferize(df[xlma_params.time_unit], xlma_params.buffer_extension)
@@ -580,6 +650,21 @@ def create_strike_image(xlma_params: XLMAParams,
     sm.set_array([])  # Necessary for matplotlib to handle the colorbar correctly
 
     fig.colorbar(sm, cax=ax_colorbar, orientation='vertical', label=xlma_params.headers[xlma_params.color_unit])
+
+    ######################################################################
+    # Overlaying Additional Optional Figures
+    ######################################################################
+    overlays = None
+    if xlma_params.twod_overlay_function != None:
+        overlays: Optional[List[Overlay]] = xlma_params.twod_overlay_function(
+            range_params.y_range[0], range_params.y_range[1],   # lat min/max
+            range_params.x_range[0], range_params.x_range[1],   # lon min/max
+            range_params.alt_range[0], range_params.alt_range[1]  # alt min/max
+        )
+
+    overlay_cbar_count = 0
+    if overlays:
+        overlay_cbar_count = sum(1 for ov in overlays if ov.colorbar_details is not None)
 
 
     ######################################################################

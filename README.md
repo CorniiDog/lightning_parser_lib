@@ -170,14 +170,17 @@ def main():
     if EXPORT_AS_CSV:
         config_and_parser.export_as_csv(bucketed_strikes_indices, events, config=lightning_configuration) 
 
-    # Add a zipped file for counties into the project
-    # and it will automatically unzip and locate, so long as it follows formatting `tl_XXXX_us_county.zip` (i.e. `tl_2024_us_county.zip``)
+    # Add a zipped file for counties into the project directory and it will automatically unzip and locate, 
+    # so long as it follows formatting `tl_XXXX_us_county.zip` (i.e. `tl_2024_us_county.zip`)
+    #
+    # Download your own `tl_XXXX_us_county.zip` using link below and simply drag into project directory. The toolbox.append_county([])
+    # Function will handle the rest.
     # https://www2.census.gov/geo/tiger/TIGER2024/COUNTY/
 
     xlma_params = XLMAParams(
         dark_theme=True,
         color_unit='power_db',
-        cartopy_paths= toolbox.append_county([])
+        cartopy_paths= toolbox.append_county([]) # Ignore unless you wish to explicitly add a path to a .shp file
     )
 
     if EXPORT_GENERAL_STATS:
