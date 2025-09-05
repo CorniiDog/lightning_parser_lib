@@ -397,27 +397,24 @@ if __name__ == "__main__":
   main()
 ```
 
-## Useful Functions
+## Useful Functions (for my own self for maintenance)
 
 - Run in background: `python main.py > output.log 2>&1 & disown`
 
 - List all files in directory './' and sizes: `du -h --max-depth=1 ./ | sort -hr`
 
-> [!NOTE]
-> Because of Python 3.12 onwards, you may need to consider running via the following:
+> - `python main.py`
 >
-> - `./.venv/bin/python main.py`
+> - `python main.py > output.log 2>&1 & disown`
 >
-> - `./.venv/bin/python main.py > output.log 2>&1 & disown`
+> - `pip install -r requirements.txt`
 >
-> - `./.venv/bin/pip install -r requirements.txt`
+> - `pip show setuptools`
 >
-> - `./.venv/bin/pip show setuptools`
->
-> - `./.venv/bin/python3 -m build`
+> - `python3 -m build`
 
 ## Building from source
 
-- `.venv/bin/python -m build`
-- `.venv/bin/python3 -m twine upload dist/*`
-- `.venv/bin/python3 -m twine upload --repository lightning_parser_lib dist/*`
+- `python -m build`
+- `python -m twine upload dist/*`
+- `python -m twine upload --repository lightning_parser_lib dist/*`
