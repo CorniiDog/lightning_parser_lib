@@ -42,7 +42,7 @@ from datashader.transfer_functions import spread
 from matplotlib import colormaps, rcParams
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
-from typing import List, Dict, Tuple, Optional
+from typing import List, Dict, Tuple, Optional, Union
 import scipy
 import matplotlib.gridspec as gridspec
 from matplotlib.ticker import FuncFormatter
@@ -265,7 +265,7 @@ def range_bufferize(list_items: list[float], l_buffer_extension: float) -> Tuple
 
 class FigureDetails:
     def __init__(self, 
-                 fig: Figure,
+                 fig: Union[Figure, Image.Image, np.ndarray],
                  uses_lat: bool = True,
                  uses_lon: bool = True,
                  uses_alt: bool = False):
@@ -541,6 +541,11 @@ class RangeParams:
         self.num_pts_range = num_pts_range
         self.colorbar_range = colorbar_range
 
+def _figure_to_rgba_array(fig: Figure, dpi: int = 300) -> np.ndarray:
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png", dpi=dpi, transparent=True, bbox_inches="tight", pad_inches=0)
+    buf.seek(0)
+    return np.array(Image.open(buf).convert("RGBA"))
 
 def create_strike_image(xlma_params: XLMAParams,
                         events: pd.DataFrame,
@@ -596,30 +601,8 @@ def create_strike_image(xlma_params: XLMAParams,
     # Convert Matplotlib colormap to hex colors for Datashader
     colormap = colormap_to_hex(xlma_params.colormap_scheme)
 
-
     ######################################################################
-    # Fig creation and formatting
-    ######################################################################
-    fig = plt.figure(figsize=xlma_params.figure_size)
-
-    # Create a 2x2 sub-grid with custom ratios
-    gs = gridspec.GridSpec(3, 3, height_ratios=[1, 1, 4], width_ratios=[4, 1, 0.1], wspace=0)
-    ax0 = fig.add_subplot(gs[0, :])
-    ax1 = fig.add_subplot(gs[1, 0])  # Top left
-    ax2 = fig.add_subplot(gs[1, 1])  # Top right
-    ax3 = fig.add_subplot(gs[2, 0])  # Bottom left (largest)
-    ax4 = fig.add_subplot(gs[2, 1])  # Bottom right
-    ax_colorbar = fig.add_subplot(gs[:, 2])  # Bottom right
-
-    ax0.sharey(ax1)
-    ax2.sharey(ax1)
-
-    ax1.sharex(ax3)
-
-    ax3.sharey(ax4)
-
-    ######################################################################
-    # Main Colorbar Preparation
+    # First/Primary Colorbar Preparation
     ######################################################################
     color_unit_specific = xlma_params.color_unit + "_cu"
     df[color_unit_specific] = df[xlma_params.color_unit]
@@ -643,14 +626,6 @@ def create_strike_image(xlma_params: XLMAParams,
     time_unit_datetime = 'datetime'
     df['datetime'] = pd.to_datetime(df[xlma_params.time_unit], unit='s', utc=True)
 
-    # Compute normalization based on your data (e.g., power_db values)
-    norm = mcolors.Normalize(vmin=range_params.colorbar_range[0], vmax=range_params.colorbar_range[1])
-    # Create a ScalarMappable with the chosen colormap
-    sm = plt.cm.ScalarMappable(norm=norm, cmap=colormaps[xlma_params.colormap_scheme])
-    sm.set_array([])  # Necessary for matplotlib to handle the colorbar correctly
-
-    fig.colorbar(sm, cax=ax_colorbar, orientation='vertical', label=xlma_params.headers[xlma_params.color_unit])
-
     ######################################################################
     # Overlaying Additional Optional Figures
     ######################################################################
@@ -665,6 +640,50 @@ def create_strike_image(xlma_params: XLMAParams,
     overlay_cbar_count = 0
     if overlays:
         overlay_cbar_count = sum(1 for ov in overlays if ov.colorbar_details is not None)
+
+    ######################################################################
+    # Figure grid layout creation
+    ######################################################################
+
+    # (For the colorbar region) grow with number of overlay colorbars
+    right_col_width = 0.10 + 0.06 * overlay_cbar_count
+
+    fig = plt.figure(figsize=xlma_params.figure_size)
+
+    # Bulding layout
+    gs = gridspec.GridSpec(
+        3, 3, 
+        height_ratios=[1, 1, 4], 
+        width_ratios=[4, 1, right_col_width], 
+        wspace=0
+    )
+
+    ax0 = fig.add_subplot(gs[0, :])  # time-alt
+    ax1 = fig.add_subplot(gs[1, 0])  # Top left (lon-alt)
+    ax2 = fig.add_subplot(gs[1, 1])  # Top right (alt-num_pts)
+    ax3 = fig.add_subplot(gs[2, 0])  # Bottom left (the primary map) lon-lat
+    ax4 = fig.add_subplot(gs[2, 1])  # Bottom right (alt-lat)
+
+    # Align figures appropriately
+    ax0.sharey(ax1)
+    ax2.sharey(ax1)
+    ax1.sharex(ax3)
+    ax3.sharey(ax4)
+
+    ######################################################################
+    # Colorbar-stack container (subdivide the whole right column)
+    ######################################################################
+    cb_stack = gridspec.GridSpecFromSubplotSpec(1 + overlay_cbar_count, 1, subplot_spec=gs[:, 2], hspace=0.55)
+    ax_cbar_main = fig.add_subplot(cb_stack[0, 0])
+    ax_cbar_overlays = [fig.add_subplot(cb_stack[i, 0]) for i in range(1, 1 + overlay_cbar_count)]
+    
+    # Compute normalization based on your data (e.g., power_db values)
+    norm = mcolors.Normalize(vmin=range_params.colorbar_range[0], vmax=range_params.colorbar_range[1])
+    # Create a ScalarMappable with the chosen colormap
+    sm = plt.cm.ScalarMappable(norm=norm, cmap=colormaps[xlma_params.colormap_scheme])
+    sm.set_array([])  # Necessary for matplotlib to handle the colorbar correctly
+
+    fig.colorbar(sm, cax=ax_cbar_main, orientation='vertical', label=xlma_params.headers[xlma_params.color_unit])
 
 
     ######################################################################
@@ -899,6 +918,54 @@ def create_strike_image(xlma_params: XLMAParams,
         ax1.add_collection(lc)
 
     ax1.set_ylabel(xlma_params.headers[xlma_params.alt_unit])
+
+    ######################################################################
+    # Overlaying additional information
+    ######################################################################
+    def _target_for(fd: FigureDetails):
+        if fd.uses_lat and fd.uses_lon:   # lon-lat
+            return ax3, (range_params.x_range[0], range_params.x_range[1],
+                        range_params.y_range[0], range_params.y_range[1])
+        if fd.uses_lon and fd.uses_alt:   # lon-alt
+            return ax1, (range_params.x_range[0], range_params.x_range[1],
+                        range_params.alt_range[0], range_params.alt_range[1])
+        if fd.uses_lat and fd.uses_alt:   # alt-lat (x=alt, y=lat)
+            return ax4, (range_params.alt_range[0], range_params.alt_range[1],
+                        range_params.y_range[0], range_params.y_range[1])
+        raise ValueError("FigureDetails must enable exactly two of {lat, lon, alt}.")
+
+    if overlays:
+        cbar_idx = 0
+        for ov in overlays:
+            # draw all figures for this overlay
+            for fd in ov.figures:
+                if isinstance(fd.fig, Figure):
+                    overlay_arr = _figure_to_rgba_array(fd.fig, dpi=xlma_params.dpi)
+                elif isinstance(fd.fig, Image.Image):
+                    overlay_arr = np.array(fd.fig.convert("RGBA"))
+                elif isinstance(fd.fig, np.ndarray):
+                    overlay_arr = fd.fig
+                else:
+                    raise TypeError(f"{ov.overlay_name}: unsupported figure type {type(fd.fig)}")
+
+                tgt_ax, tgt_extent = _target_for(fd)
+                tgt_ax.imshow(overlay_arr, extent=tgt_extent, origin='upper',
+                            zorder=6, interpolation='nearest')
+
+            # optional colorbar for this overlay
+            if ov.colorbar_details is not None:
+                cax = ax_cbar_overlays[cbar_idx]
+                cbd = ov.colorbar_details
+                # get a ScalarMappable from the provided Colorbar or mappable
+                if hasattr(cbd.colorbar, "mappable"):
+                    mappable = cbd.colorbar.mappable
+                elif isinstance(cbd.colorbar, matplotlib.cm.ScalarMappable):
+                    mappable = cbd.colorbar
+                else:
+                    raise ValueError(f"{ov.overlay_name}: ColorbarDetails must hold a Colorbar or ScalarMappable.")
+                fig.colorbar(mappable, cax=cax, orientation='vertical',
+                            label=(ov.colorbar_name or ""))
+                cbar_idx += 1
 
     ######################################################################
     # Aspect ratio adjustment
