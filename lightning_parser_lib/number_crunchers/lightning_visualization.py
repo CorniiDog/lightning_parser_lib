@@ -64,7 +64,7 @@ from . import toolbox
 from matplotlib.figure import Figure
 from matplotlib.colorbar import Colorbar
 from collections.abc import Callable
-
+from lightning_parser_overlays.core import FigureDetails, ColorbarDetails, Overlay
 
 
 def main():

@@ -13,3 +13,4 @@ matplotlib
 holoviews
 geopandas
 Deprecation
+lightning-parser-overlays
