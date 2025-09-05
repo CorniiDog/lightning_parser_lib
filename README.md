@@ -415,6 +415,12 @@ if __name__ == "__main__":
 
 ## Building from source
 
-- `python -m build`
+Build: `python -m build`
+
+Then upload:
+
 - `python -m twine upload dist/*`
+
+or
+
 - `python -m twine upload --repository lightning_parser_lib dist/*`
