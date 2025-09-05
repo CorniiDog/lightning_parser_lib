@@ -415,9 +415,11 @@ if __name__ == "__main__":
 
 ## Building from source
 
-Build: `python -m build`
+**Build:** 
 
-Then upload:
+`python -m build`
+
+**Then upload:**
 
 - `python -m twine upload dist/*`
 
