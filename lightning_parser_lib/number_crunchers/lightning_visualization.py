@@ -309,6 +309,55 @@ class Overlay:
 ######################################################################
 # Parameters
 ######################################################################
+class RangeParams:
+    """
+    Container for numerical ranges used in visualization axis limits and normalization.
+
+    This class encapsulates the various buffered numerical ranges (e.g., time, altitude,
+    spatial coordinates, and colorbar values) that are computed and applied to plotting axes
+    for consistent scaling and presentation.
+
+    Attributes:
+        time_unit_range (tuple or list, optional): The buffered range for the time unit values.
+        time_unit_datetime_range (tuple or list, optional): The buffered range as datetime values.
+        time_range (tuple or list, optional): The raw range of time values.
+        alt_range (tuple or list, optional): The buffered range of altitude values.
+        x_range (tuple or list, optional): The buffered range of x-coordinate values (e.g., longitude).
+        y_range (tuple or list, optional): The buffered range of y-coordinate values (e.g., latitude).
+        num_pts_range (tuple or list, optional): The buffered range for the number of points (used in aggregation).
+        colorbar_range (tuple or list, optional): The range of values used for colorbar normalization.
+    """
+
+    def __init__(self,
+                 time_unit_range=None,
+                 time_unit_datetime_range=None,
+                 time_range=None,
+                 alt_range=None,
+                 x_range=None,
+                 y_range=None,
+                 num_pts_range=None,
+                 colorbar_range=None):
+        """
+        Initialize a new instance of the RangeParams class.
+
+        Parameters:
+            time_unit_range (tuple or list, optional): The buffered range for the time unit values. Defaults to None.
+            time_unit_datetime_range (tuple or list, optional): The buffered range as datetime values. Defaults to None.
+            time_range (tuple or list, optional): The raw range of time values. Defaults to None.
+            alt_range (tuple or list, optional): The buffered range of altitude values. Defaults to None.
+            x_range (tuple or list, optional): The buffered range of x-coordinate values (e.g., longitude). Defaults to None.
+            y_range (tuple or list, optional): The buffered range of y-coordinate values (e.g., latitude). Defaults to None.
+            num_pts_range (tuple or list, optional): The buffered range for the number of points (used in aggregation). Defaults to None.
+            colorbar_range (tuple or list, optional): The range of values used for colorbar normalization. Defaults to None.
+        """
+        self.time_unit_range = time_unit_range
+        self.time_unit_datetime_range = time_unit_datetime_range
+        self.time_range = time_range
+        self.alt_range = alt_range
+        self.x_range = x_range
+        self.y_range = y_range
+        self.num_pts_range = num_pts_range
+        self.colorbar_range = colorbar_range
 
 class XLMAParams:
     """
@@ -364,7 +413,7 @@ class XLMAParams:
             additional_overlap_right: int = 0,
             additional_overlap_up: int = 0,
             additional_overlap_down: int = 0,
-            twod_overlay_function: Callable[[float, float, float, float, float, float], List[Overlay]] = None):
+            twod_overlay_function: Callable[[RangeParams], List[Overlay]] = None):
             
         """
         Initialize the XLMAParams instance with visualization parameters.
@@ -409,16 +458,9 @@ class XLMAParams:
             additional_overlap_right (int): Additional overlap negation in pixels (increase if text is cut-off)
             additional_overlap_up (int): Additional overlap negation in pixels (increase if text is cut-off)
             additional_overlap_down (int): Additional overlap negation in pixels (increase if text is cut-off)
-            twod_overlay_function (Callable[[float, float, float, float, float, float], List[Overlay]]): 
+            twod_overlay_function (Callable[[RangeParams], List[Overlay]]): 
             A user-supplied function that defines how additional 2D overlays are generated 
                 within a spatial bounding box. The callable receives six float arguments:
-
-                    lat_min (float): Minimum latitude of the bounding box.
-                    lat_max (float): Maximum latitude of the bounding box.
-                    lon_min (float): Minimum longitude of the bounding box.
-                    lon_max (float): Maximum longitude of the bounding box.
-                    alt_min (float): Minimum altitude of the bounding box.
-                    alt_max (float): Maximum altitude of the bounding box.
 
                 The function must return a list of `Overlay` objects (or equivalent figures) 
                 that will be drawn on top of the visualization. This allows integration of 
@@ -490,56 +532,6 @@ class XLMAParams:
         if headers:
             for key, value in headers:
                 self.headers[key] = value
-
-class RangeParams:
-    """
-    Container for numerical ranges used in visualization axis limits and normalization.
-
-    This class encapsulates the various buffered numerical ranges (e.g., time, altitude,
-    spatial coordinates, and colorbar values) that are computed and applied to plotting axes
-    for consistent scaling and presentation.
-
-    Attributes:
-        time_unit_range (tuple or list, optional): The buffered range for the time unit values.
-        time_unit_datetime_range (tuple or list, optional): The buffered range as datetime values.
-        time_range (tuple or list, optional): The raw range of time values.
-        alt_range (tuple or list, optional): The buffered range of altitude values.
-        x_range (tuple or list, optional): The buffered range of x-coordinate values (e.g., longitude).
-        y_range (tuple or list, optional): The buffered range of y-coordinate values (e.g., latitude).
-        num_pts_range (tuple or list, optional): The buffered range for the number of points (used in aggregation).
-        colorbar_range (tuple or list, optional): The range of values used for colorbar normalization.
-    """
-
-    def __init__(self,
-                 time_unit_range=None,
-                 time_unit_datetime_range=None,
-                 time_range=None,
-                 alt_range=None,
-                 x_range=None,
-                 y_range=None,
-                 num_pts_range=None,
-                 colorbar_range=None):
-        """
-        Initialize a new instance of the RangeParams class.
-
-        Parameters:
-            time_unit_range (tuple or list, optional): The buffered range for the time unit values. Defaults to None.
-            time_unit_datetime_range (tuple or list, optional): The buffered range as datetime values. Defaults to None.
-            time_range (tuple or list, optional): The raw range of time values. Defaults to None.
-            alt_range (tuple or list, optional): The buffered range of altitude values. Defaults to None.
-            x_range (tuple or list, optional): The buffered range of x-coordinate values (e.g., longitude). Defaults to None.
-            y_range (tuple or list, optional): The buffered range of y-coordinate values (e.g., latitude). Defaults to None.
-            num_pts_range (tuple or list, optional): The buffered range for the number of points (used in aggregation). Defaults to None.
-            colorbar_range (tuple or list, optional): The range of values used for colorbar normalization. Defaults to None.
-        """
-        self.time_unit_range = time_unit_range
-        self.time_unit_datetime_range = time_unit_datetime_range
-        self.time_range = time_range
-        self.alt_range = alt_range
-        self.x_range = x_range
-        self.y_range = y_range
-        self.num_pts_range = num_pts_range
-        self.colorbar_range = colorbar_range
 
 def _figure_to_rgba_array(fig: Figure, dpi: int = 300) -> np.ndarray:
     buf = io.BytesIO()
@@ -632,9 +624,7 @@ def create_strike_image(xlma_params: XLMAParams,
     overlays = None
     if xlma_params.twod_overlay_function != None:
         overlays: Optional[List[Overlay]] = xlma_params.twod_overlay_function(
-            range_params.y_range[0], range_params.y_range[1],   # lat min/max
-            range_params.x_range[0], range_params.x_range[1],   # lon min/max
-            range_params.alt_range[0], range_params.alt_range[1]  # alt min/max
+            range_params
         )
 
     overlay_cbar_count = 0
@@ -646,15 +636,13 @@ def create_strike_image(xlma_params: XLMAParams,
     ######################################################################
 
     # (For the colorbar region) grow with number of overlay colorbars
-    right_col_width = 0.10 + 0.06 * overlay_cbar_count
-
     fig = plt.figure(figsize=xlma_params.figure_size)
 
     # Bulding layout
     gs = gridspec.GridSpec(
         3, 3, 
         height_ratios=[1, 1, 4], 
-        width_ratios=[4, 1, right_col_width], 
+        width_ratios=[4, 1, 0.1], 
         wspace=0
     )
 
@@ -673,7 +661,7 @@ def create_strike_image(xlma_params: XLMAParams,
     ######################################################################
     # Colorbar-stack container (subdivide the whole right column)
     ######################################################################
-    cb_stack = gridspec.GridSpecFromSubplotSpec(1 + overlay_cbar_count, 1, subplot_spec=gs[:, 2], hspace=0.55)
+    cb_stack = gridspec.GridSpecFromSubplotSpec(1 + overlay_cbar_count, 1, subplot_spec=gs[:, 2], hspace=0.1)
     ax_cbar_main = fig.add_subplot(cb_stack[0, 0])
     ax_cbar_overlays = [fig.add_subplot(cb_stack[i, 0]) for i in range(1, 1 + overlay_cbar_count)]
     
@@ -1319,6 +1307,7 @@ def export_stats(xlma_params: XLMAParams, events: pd.DataFrame, bucketed_indeces
         agg_times.append(rep_time)
         num_pts.append(len(bucket))
 
+
     # Choose the line color based on the theme.
     marker_color = 'black'
     if xlma_params.dark_theme:
@@ -1344,6 +1333,15 @@ def export_stats(xlma_params: XLMAParams, events: pd.DataFrame, bucketed_indeces
     )
 
     ax.xaxis.set_major_formatter(FuncFormatter(custom_time_formatter))
+
+    if not num_pts:
+        fig, ax = plt.subplots()
+        ax.set_title("Points Over Time (no non-empty buckets)")
+        ax.set_xlabel("Time (UTC)")
+        ax.set_ylabel("Number of Points")
+        fig.savefig(export_path, dpi=getattr(xlma_params, "dpi", 300))
+        plt.close(fig)
+        return
 
     ax.yaxis.set_major_formatter(FuncFormatter(conditional_formatter_factory(min(num_pts), max(num_pts))))
 
