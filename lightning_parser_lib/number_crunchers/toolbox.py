@@ -422,7 +422,7 @@ def append_county(cartopy_paths: List[str]):
         county_dir_zip = find_county_file(is_dir=False)
         if county_dir_zip:
             unzip_file(county_dir_zip)
-            return append_county() # Try again
+            return append_county(cartopy_paths) # Try again
     return cartopy_paths
         
 def split_into_groups(x: List[Any], num_workers: int):
