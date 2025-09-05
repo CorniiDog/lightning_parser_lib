@@ -309,6 +309,27 @@ class Overlay:
 ######################################################################
 # Parameters
 ######################################################################
+class FigBaseDimensions:
+    """
+    Container for storing the dimensions in pixels of the given frame
+    """
+    def __init__(self,
+                 x_y_width: int = 200,
+                 x_y_height: int = 200,
+                 x_alt_height: int = 50,
+                 alt_y_width: int = 50,
+                 time_alt_width: int = 295,
+                 time_alt_height: int = 50):
+        self.x_y_width = x_y_width
+        self.x_y_height = x_y_height
+        self.x_alt_height = x_alt_height
+        self.x_alt_width= x_y_width # because together
+        self.alt_y_width = alt_y_width
+        self.alt_y_height = x_y_height # because together
+        self.time_alt_width = time_alt_width
+        self.time_alt_height = time_alt_height
+        
+
 class RangeParams:
     """
     Container for numerical ranges used in visualization axis limits and normalization.
@@ -579,6 +600,9 @@ def create_strike_image(xlma_params: XLMAParams,
 
     description = f"{start_time_str}"
 
+    # To establish the base dimensions of the plot to keep things organized
+    base_dimensions = FigBaseDimensions()
+
     ######################################################################
     # Initialization and config adjustment
     ######################################################################
@@ -624,7 +648,7 @@ def create_strike_image(xlma_params: XLMAParams,
     overlays = None
     if xlma_params.twod_overlay_function != None:
         overlays: Optional[List[Overlay]] = xlma_params.twod_overlay_function(
-            range_params
+            range_params, base_dimensions
         )
 
     overlay_cbar_count = 0
@@ -678,7 +702,7 @@ def create_strike_image(xlma_params: XLMAParams,
     # Alt and Time Plot
     ######################################################################
     # Define canvas using longitude and latitude ranges (in degrees)
-    cvs = ds.Canvas(plot_width=295*xlma_params.points_resolution_multiplier, plot_height=50*xlma_params.points_resolution_multiplier,
+    cvs = ds.Canvas(plot_width=base_dimensions.time_alt_width*xlma_params.points_resolution_multiplier, plot_height=base_dimensions.time_alt_height*xlma_params.points_resolution_multiplier,
                     x_range=range_params.time_range,
                     y_range=range_params.alt_range)
 
@@ -754,8 +778,8 @@ def create_strike_image(xlma_params: XLMAParams,
     ax2.set_ylabel(f"Chunked \n({xlma_params.headers[xlma_params.alt_unit]}//{xlma_params.altitude_group_size})")
 
     # Optionally, overlay the Datashader image for the points.
-    cvs = ds.Canvas(plot_width=200 * xlma_params.altitude_graph_resolution_multiplier,
-                    plot_height=200 * xlma_params.altitude_graph_resolution_multiplier,
+    cvs = ds.Canvas(plot_width=base_dimensions.x_y_width * xlma_params.altitude_graph_resolution_multiplier,
+                    plot_height=base_dimensions.x_y_height * xlma_params.altitude_graph_resolution_multiplier,
                     x_range=range_params.num_pts_range,
                     y_range=range_params.alt_range)
     agg = cvs.points(alt_df, xlma_params.num_pts_unit, xlma_params.alt_group_unit,
@@ -772,7 +796,7 @@ def create_strike_image(xlma_params: XLMAParams,
     # Lat and Lon Plot
     ######################################################################
     # Define canvas using longitude and latitude ranges (in degrees)
-    cvs = ds.Canvas(plot_width=200*xlma_params.points_resolution_multiplier, plot_height=200*xlma_params.points_resolution_multiplier,
+    cvs = ds.Canvas(plot_width=base_dimensions.x_y_width*xlma_params.points_resolution_multiplier, plot_height=base_dimensions.x_y_height*xlma_params.points_resolution_multiplier,
                     x_range=range_params.x_range,
                     y_range=range_params.y_range)
 
@@ -845,7 +869,7 @@ def create_strike_image(xlma_params: XLMAParams,
     # Lat and Alt Plot
     ######################################################################
     # Define canvas using altitude and latitude ranges (in degrees)
-    cvs = ds.Canvas(plot_width=50*xlma_params.points_resolution_multiplier, plot_height=200*xlma_params.points_resolution_multiplier,
+    cvs = ds.Canvas(plot_width=base_dimensions.alt_y_width*xlma_params.points_resolution_multiplier, plot_height=base_dimensions.alt_y_height*xlma_params.points_resolution_multiplier,
                     x_range=range_params.alt_range,
                     y_range=range_params.y_range)
 
@@ -878,7 +902,7 @@ def create_strike_image(xlma_params: XLMAParams,
     # Alt and Lon Plot
     ######################################################################
     # Define canvas using longitude and altitude ranges (in degrees)
-    cvs = ds.Canvas(plot_width=200*xlma_params.points_resolution_multiplier, plot_height=50*xlma_params.points_resolution_multiplier,
+    cvs = ds.Canvas(plot_width=base_dimensions.x_alt_width*xlma_params.points_resolution_multiplier, plot_height=base_dimensions.x_alt_height*xlma_params.points_resolution_multiplier,
                     x_range=range_params.x_range,
                     y_range=range_params.alt_range)
 
